@@ -1,7 +1,10 @@
 import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACT_CONFIG } from '@/config/contract';
 import { CONTRACT_ABI } from '@/config/abi';
-import holders from '../../holders.json';
+import whaleHolders1 from '../data/whaleHolders.json';
+import whaleHolders2 from '../data/whaleHolders2.json';
+import holders1 from '../data/holders.json';
+import holders2 from '../data/holders2.json';
 import { pulsechain } from 'viem/chains';
 
 export type HolderTier = 'whale' | 'holder' | 'public';
@@ -44,6 +47,18 @@ export const useHolderEligibility = (): HolderEligibility => {
     }
   });
 
+  // Combine whale holders from both files
+  const allWhaleHolders = [
+    ...whaleHolders1.whaleHolders,
+    ...whaleHolders2.whaleHolders
+  ];
+
+  // Combine regular holders from both files
+  const allHolders = [
+    ...holders1.holders,
+    ...holders2.holders
+  ];
+
   // Determine tier based on address presence in holders lists
   let tier: HolderTier = 'public';
   let maxFreePacks = 0;
@@ -51,11 +66,11 @@ export const useHolderEligibility = (): HolderEligibility => {
   let maxMintAmount = 10; // Default max mint amount for all users
 
   if (normalizedAddress) {
-    if (holders.whaleHolders.map(addr => addr.toLowerCase()).includes(normalizedAddress)) {
+    if (allWhaleHolders.map(addr => addr.toLowerCase()).includes(normalizedAddress)) {
       tier = 'whale';
       maxFreePacks = hasClaimedFreePack ? 0 : 1; // Only give free pack if not claimed
       maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0); // Subtract already minted discounted packs
-    } else if (holders.holders.map(addr => addr.toLowerCase()).includes(normalizedAddress)) {
+    } else if (allHolders.map(addr => addr.toLowerCase()).includes(normalizedAddress)) {
       tier = 'holder';
       maxFreePacks = 0;
       maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0); // Subtract already minted discounted packs
