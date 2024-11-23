@@ -1,13 +1,10 @@
-import { useState, useEffect } from "react";
-import { useAccount, useConnect, useWriteContract, useChainId, useSwitchChain, useDisconnect } from "wagmi";
+import { useAccount, useConnect, useChainId, useSwitchChain, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { useToast } from "@/components/ui/use-toast";
 import { CONTRACT_CONFIG } from "@/config/contract";
-import { CONTRACT_ABI } from "@/config/abi";
-import { pulsechain } from 'viem/chains';
 import { Link } from "react-router-dom";
-import { useContractData } from "@/hooks/useContractData";
 import { useHolderEligibility } from "@/hooks/useHolderEligibility";
+import { useMinting } from "@/hooks/useMinting";
 import { MintControls } from "@/components/MintControls";
 import { motion } from "framer-motion";
 import { CollectionStats } from "@/components/CollectionStats";
@@ -17,41 +14,14 @@ import { Button } from "@/components/ui/button";
 import { LogOut, Package, Info } from "lucide-react";
 
 const Index = () => {
-  const [mintAmount, setMintAmount] = useState(1);
   const { toast } = useToast();
   const { address, isConnected } = useAccount();
-  const { connect, error: connectError } = useConnect();
+  const { connect } = useConnect();
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   const { disconnect } = useDisconnect();
-  const { totalMinted, totalPacks, mintPrice } = useContractData();
-  const { maxMintAmount, isEligible } = useHolderEligibility();
-  const { writeContract: mint, isPending: isMinting } = useWriteContract();
-
-  // Effect to show success toast when wallet is actually connected
-  useEffect(() => {
-    if (isConnected && address) {
-      toast({
-        title: "Connected",
-        description: "Your wallet has been connected successfully.",
-      });
-    }
-  }, [isConnected, address, toast]);
-
-  const promptNetworkSwitch = async () => {
-    try {
-      await switchChain({ 
-        chainId: CONTRACT_CONFIG.chain.id
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Wrong Network",
-        description: "Please switch to PulseChain to use this dApp.",
-      });
-      await disconnect();
-    }
-  };
+  const { tier, freePacks, discountedPacks, maxMintAmount } = useHolderEligibility();
+  const { mintAmount, setMintAmount, mint, isMinting } = useMinting(tier, freePacks, discountedPacks);
 
   const handleConnect = async () => {
     try {
@@ -66,7 +36,6 @@ const Index = () => {
         chainId: CONTRACT_CONFIG.chain.id
       });
     } catch (error: any) {
-      // Only show toast for specific error cases
       if (error?.code === -32002) {
         toast({
           variant: "destructive",
@@ -74,7 +43,6 @@ const Index = () => {
           description: "Please check your wallet for pending connection requests.",
         });
       } else if (error?.code === 4001) {
-        // User rejected the connection - no need to show a message
         return;
       } else if (error?.message?.includes("no injected wallets")) {
         toast({
@@ -98,49 +66,6 @@ const Index = () => {
         variant: "destructive",
         title: "Error",
         description: "Failed to disconnect wallet.",
-      });
-    }
-  };
-
-  const handleMint = async () => {
-    if (!isConnected) {
-      toast({
-        variant: "destructive",
-        title: "Wallet Not Connected",
-        description: "Please connect your wallet first.",
-      });
-      return;
-    }
-
-    if (chainId !== CONTRACT_CONFIG.chain.id) {
-      toast({
-        variant: "destructive",
-        title: "Wrong Network",
-        description: "Please switch to PulseChain to mint.",
-      });
-      return;
-    }
-
-    try {
-      await mint({
-        address: CONTRACT_CONFIG.address as `0x${string}`,
-        abi: CONTRACT_ABI,
-        functionName: 'mintPacks',
-        args: [BigInt(mintAmount)],
-        value: mintPrice ? BigInt(mintPrice) * BigInt(mintAmount) : BigInt(0),
-        account: address as `0x${string}`,
-        chain: pulsechain,
-      });
-      
-      toast({
-        title: "Success!",
-        description: `Successfully minted ${mintAmount} pack${mintAmount > 1 ? 's' : ''}!`,
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Minting Error",
-        description: "Failed to mint. Please try again.",
       });
     }
   };
@@ -198,10 +123,12 @@ const Index = () => {
               setMintAmount={setMintAmount}
               isConnected={isConnected}
               isMinting={isMinting}
-              onMint={handleMint}
+              onMint={mint}
               onConnect={handleConnect}
               maxMintAmount={maxMintAmount}
-              isEligible={isEligible}
+              tier={tier}
+              freePacks={freePacks}
+              discountedPacks={discountedPacks}
             />
 
             {isConnected && (

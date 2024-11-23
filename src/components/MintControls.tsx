@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { HolderTier } from "@/hooks/useHolderEligibility";
 
 interface MintControlsProps {
   mintAmount: number;
@@ -10,7 +11,9 @@ interface MintControlsProps {
   onMint: () => void;
   onConnect: () => void;
   maxMintAmount: number;
-  isEligible: boolean;
+  tier: HolderTier;
+  freePacks: number;
+  discountedPacks: number;
 }
 
 export const MintControls = ({
@@ -21,17 +24,28 @@ export const MintControls = ({
   onMint,
   onConnect,
   maxMintAmount,
-  isEligible
+  tier,
+  freePacks,
+  discountedPacks
 }: MintControlsProps) => {
-  const effectiveMaxMint = maxMintAmount > 0 ? maxMintAmount : 3; // Default max mint if not a holder
+  const getBenefitsMessage = () => {
+    if (tier === 'whale') {
+      return `Whale Benefits: 1 FREE pack + ${discountedPacks} packs at 50% off!`;
+    } else if (tier === 'holder') {
+      return `Holder Benefits: ${discountedPacks} packs at 50% off!`;
+    }
+    return null;
+  };
+
+  const benefitsMessage = getBenefitsMessage();
 
   return (
     <div className="space-y-4">
-      {isConnected && maxMintAmount > 3 && (
+      {isConnected && benefitsMessage && (
         <Alert className="bg-green-500/10 border-green-500/20 text-green-500">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            Holder Benefits: You can mint up to {maxMintAmount} packs!
+            {benefitsMessage}
           </AlertDescription>
         </Alert>
       )}
@@ -50,8 +64,8 @@ export const MintControls = ({
         </span>
         <Button
           variant="outline"
-          onClick={() => setMintAmount(Math.min(effectiveMaxMint, mintAmount + 1))}
-          disabled={mintAmount >= effectiveMaxMint}
+          onClick={() => setMintAmount(Math.min(maxMintAmount, mintAmount + 1))}
+          disabled={mintAmount >= maxMintAmount}
           className="z-10"
         >
           +
