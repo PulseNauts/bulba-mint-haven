@@ -138,5 +138,24 @@ export const CONTRACT_ABI = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "holder",
+        type: "address"
+      }
+    ],
+    name: "getHolderMintEligibility",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "maxMintAmount",
+        type: "uint256"
+      }
+    ],
+    stateMutability: "view",
+    type: "function"
   }
 ] as const;

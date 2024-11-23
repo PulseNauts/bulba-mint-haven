@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface MintControlsProps {
   mintAmount: number;
@@ -8,6 +9,8 @@ interface MintControlsProps {
   isMinting: boolean;
   onMint: () => void;
   onConnect: () => void;
+  maxMintAmount: number;
+  isEligible: boolean;
 }
 
 export const MintControls = ({
@@ -16,15 +19,26 @@ export const MintControls = ({
   isConnected,
   isMinting,
   onMint,
-  onConnect
+  onConnect,
+  maxMintAmount,
+  isEligible
 }: MintControlsProps) => {
   return (
     <div className="space-y-4">
+      {isConnected && !isEligible && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            You are not eligible to mint. Please check the requirements.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="flex gap-4 justify-center">
         <Button
           variant="outline"
           onClick={() => setMintAmount(Math.max(1, mintAmount - 1))}
-          disabled={mintAmount <= 1}
+          disabled={mintAmount <= 1 || !isEligible}
           className="z-10"
         >
           -
@@ -34,8 +48,8 @@ export const MintControls = ({
         </span>
         <Button
           variant="outline"
-          onClick={() => setMintAmount(Math.min(10, mintAmount + 1))}
-          disabled={mintAmount >= 10}
+          onClick={() => setMintAmount(Math.min(maxMintAmount, mintAmount + 1))}
+          disabled={mintAmount >= maxMintAmount || !isEligible}
           className="z-10"
         >
           +
@@ -46,14 +60,16 @@ export const MintControls = ({
         className="w-full z-10"
         size="lg"
         onClick={isConnected ? onMint : onConnect}
-        disabled={isMinting}
+        disabled={isMinting || (isConnected && !isEligible)}
       >
         {isMinting ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : null}
-        {isConnected
-          ? `Mint ${mintAmount} Pack${mintAmount > 1 ? 's' : ''}`
-          : 'Connect Wallet'}
+        {!isConnected 
+          ? 'Connect Wallet'
+          : !isEligible
+          ? 'Not Eligible'
+          : `Mint ${mintAmount} Pack${mintAmount > 1 ? 's' : ''}`}
       </Button>
     </div>
   );

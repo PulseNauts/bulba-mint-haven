@@ -7,6 +7,7 @@ import { CONTRACT_ABI } from "@/config/abi";
 import { pulsechain } from 'viem/chains';
 import { Link } from "react-router-dom";
 import { useContractData } from "@/hooks/useContractData";
+import { useHolderEligibility } from "@/hooks/useHolderEligibility";
 import { MintControls } from "@/components/MintControls";
 import { motion } from "framer-motion";
 import { CollectionStats } from "@/components/CollectionStats";
@@ -24,6 +25,7 @@ const Index = () => {
   const { switchChain } = useSwitchChain();
   const { disconnect } = useDisconnect();
   const { totalMinted, totalPacks, mintPrice } = useContractData();
+  const { maxMintAmount, isEligible } = useHolderEligibility();
   const { writeContract: mint, isPending: isMinting } = useWriteContract();
 
   // Effect to show success toast when wallet is actually connected
@@ -106,6 +108,15 @@ const Index = () => {
         variant: "destructive",
         title: "Wallet Not Connected",
         description: "Please connect your wallet first.",
+      });
+      return;
+    }
+
+    if (!isEligible) {
+      toast({
+        variant: "destructive",
+        title: "Not Eligible",
+        description: "You are not eligible to mint at this time.",
       });
       return;
     }
@@ -198,6 +209,8 @@ const Index = () => {
               isMinting={isMinting}
               onMint={handleMint}
               onConnect={handleConnect}
+              maxMintAmount={maxMintAmount}
+              isEligible={isEligible}
             />
 
             {isConnected && (
