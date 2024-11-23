@@ -3,6 +3,7 @@ import { Loader2, Crown, BadgeCheck, BadgeDollarSign, Gift, Percent } from "luci
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { HolderTier } from "@/hooks/useHolderEligibility";
 import { Badge } from "@/components/ui/badge";
+import { CONTRACT_CONFIG } from "@/config/contract";
 
 interface MintControlsProps {
   mintAmount: number;
