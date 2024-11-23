@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Loader2, Crown, BadgeCheck, BadgeDollarSign, Gift, Percent } from "lucide-react";
+import { Loader2, Crown, BadgeCheck, BadgeDollarSign, Gift, Percent, Shark } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { HolderTier } from "@/hooks/useHolderEligibility";
 import { Badge } from "@/components/ui/badge";
@@ -61,16 +61,16 @@ export const MintControls = ({
     } else if (tier === 'holder') {
       return (
         <div className="space-y-4">
-          <Alert className="bg-blue-500/10 border-blue-500/20">
-            <BadgeCheck className="h-5 w-5 text-blue-500" />
+          <Alert className="bg-cyan-500/10 border-cyan-500/20">
+            <Shark className="h-5 w-5 text-cyan-500" />
             <AlertDescription className="flex items-center gap-2">
-              <span className="font-semibold text-blue-500">Holder Benefits Active:</span>
+              <span className="font-semibold text-cyan-500">Shark Benefits Active:</span>
             </AlertDescription>
           </Alert>
-          <div className="flex items-center gap-2 text-blue-500">
+          <div className="flex items-center gap-2 text-cyan-500">
             <Percent className="h-4 w-4" />
             <span>{discountedPacks} Discounted Packs</span>
-            <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+            <Badge variant="secondary" className="bg-cyan-500/10 text-cyan-500">
               50% OFF
             </Badge>
           </div>
