@@ -4,8 +4,6 @@ import { CONTRACT_ABI } from '@/config/abi';
 import whaleHolders from '../data/whaleHolders.json';
 import holders1 from '../data/holders.json';
 import holders2 from '../data/holders2.json';
-import holders3 from '../data/holders3.json';
-import holders4 from '../data/holders4.json';
 import { pulsechain } from 'viem/chains';
 
 export type HolderTier = 'whale' | 'holder' | 'public';
@@ -51,12 +49,10 @@ export const useHolderEligibility = (): HolderEligibility => {
   // Get all whale holders from the single file
   const allWhaleHolders = whaleHolders.whaleHolders;
 
-  // Combine regular holders from all files
+  // Combine regular holders from both files
   const allHolders = [
     ...holders1.holders,
-    ...holders2.holders,
-    ...holders3.holders,
-    ...holders4.holders
+    ...holders2.holders
   ];
 
   // Determine tier based on address presence in holders lists
