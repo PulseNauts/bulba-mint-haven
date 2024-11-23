@@ -147,14 +147,21 @@ export const CONTRACT_ABI = [
         type: "address"
       }
     ],
-    name: "getHolderMintEligibility",
-    outputs: [
+    name: "getFreeMintCount",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
       {
-        internalType: "uint256",
-        name: "maxMintAmount",
-        type: "uint256"
+        internalType: "address",
+        name: "holder",
+        type: "address"
       }
     ],
+    name: "getDiscountedMintCount",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
     type: "function"
   }
