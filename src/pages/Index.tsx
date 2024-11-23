@@ -112,15 +112,6 @@ const Index = () => {
       return;
     }
 
-    if (!isEligible) {
-      toast({
-        variant: "destructive",
-        title: "Not Eligible",
-        description: "You are not eligible to mint at this time.",
-      });
-      return;
-    }
-
     if (chainId !== CONTRACT_CONFIG.chain.id) {
       toast({
         variant: "destructive",

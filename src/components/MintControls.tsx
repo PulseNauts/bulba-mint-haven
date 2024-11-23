@@ -23,13 +23,15 @@ export const MintControls = ({
   maxMintAmount,
   isEligible
 }: MintControlsProps) => {
+  const effectiveMaxMint = maxMintAmount > 0 ? maxMintAmount : 3; // Default max mint if not a holder
+
   return (
     <div className="space-y-4">
-      {isConnected && !isEligible && (
-        <Alert variant="destructive">
+      {isConnected && maxMintAmount > 3 && (
+        <Alert className="bg-green-500/10 border-green-500/20 text-green-500">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            You are not eligible to mint. Please check the requirements.
+            Holder Benefits: You can mint up to {maxMintAmount} packs!
           </AlertDescription>
         </Alert>
       )}
@@ -38,7 +40,7 @@ export const MintControls = ({
         <Button
           variant="outline"
           onClick={() => setMintAmount(Math.max(1, mintAmount - 1))}
-          disabled={mintAmount <= 1 || !isEligible}
+          disabled={mintAmount <= 1}
           className="z-10"
         >
           -
@@ -48,8 +50,8 @@ export const MintControls = ({
         </span>
         <Button
           variant="outline"
-          onClick={() => setMintAmount(Math.min(maxMintAmount, mintAmount + 1))}
-          disabled={mintAmount >= maxMintAmount || !isEligible}
+          onClick={() => setMintAmount(Math.min(effectiveMaxMint, mintAmount + 1))}
+          disabled={mintAmount >= effectiveMaxMint}
           className="z-10"
         >
           +
@@ -60,15 +62,13 @@ export const MintControls = ({
         className="w-full z-10"
         size="lg"
         onClick={isConnected ? onMint : onConnect}
-        disabled={isMinting || (isConnected && !isEligible)}
+        disabled={isMinting}
       >
         {isMinting ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : null}
         {!isConnected 
           ? 'Connect Wallet'
-          : !isEligible
-          ? 'Not Eligible'
           : `Mint ${mintAmount} Pack${mintAmount > 1 ? 's' : ''}`}
       </Button>
     </div>

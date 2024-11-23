@@ -6,7 +6,7 @@ import { pulsechain } from 'viem/chains';
 export const useHolderEligibility = () => {
   const { address, isConnected } = useAccount();
 
-  const { data: maxMintAmount } = useReadContract({
+  const { data: maxMintAmount, isError } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'getHolderMintEligibility',
@@ -14,11 +14,16 @@ export const useHolderEligibility = () => {
     chainId: pulsechain.id,
     query: {
       enabled: Boolean(address && isConnected),
+      retry: 2,
     }
   });
 
+  // Convert BigInt to number and handle undefined case
+  const mintAmount = maxMintAmount !== undefined ? Number(maxMintAmount) : 0;
+
   return {
-    maxMintAmount: maxMintAmount ? Number(maxMintAmount) : 0,
-    isEligible: maxMintAmount ? Number(maxMintAmount) > 0 : false
+    maxMintAmount: mintAmount,
+    isEligible: mintAmount > 0 || !isError, // Everyone can mint, but holders get higher allocation
+    isLoading: !isConnected
   };
 };
