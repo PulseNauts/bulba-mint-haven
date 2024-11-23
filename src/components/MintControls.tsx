@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, Crown, BadgeCheck, BadgeDollarSign, Gift, Percent } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { HolderTier } from "@/hooks/useHolderEligibility";
+import { Badge } from "@/components/ui/badge";
 
 interface MintControlsProps {
   mintAmount: number;
@@ -28,27 +29,59 @@ export const MintControls = ({
   freePacks,
   discountedPacks
 }: MintControlsProps) => {
-  const getBenefitsMessage = () => {
+  const getBenefitsDisplay = () => {
     if (tier === 'whale') {
-      return `Whale Benefits: 1 FREE pack + ${discountedPacks} packs at 50% off!`;
+      return (
+        <div className="space-y-4">
+          <Alert className="bg-purple-500/10 border-purple-500/20">
+            <Crown className="h-5 w-5 text-purple-500" />
+            <AlertDescription className="flex items-center gap-2">
+              <span className="font-semibold text-purple-500">Whale Benefits:</span>
+            </AlertDescription>
+          </Alert>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-green-500">
+              <Gift className="h-4 w-4" />
+              <span>1 FREE Pack</span>
+              <Badge variant="secondary" className="bg-green-500/10 text-green-500">
+                Value: {CONTRACT_CONFIG.mintPrice / 1e18} PLS
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2 text-blue-500">
+              <BadgeDollarSign className="h-4 w-4" />
+              <span>{discountedPacks} Discounted Packs</span>
+              <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+                50% OFF
+              </Badge>
+            </div>
+          </div>
+        </div>
+      );
     } else if (tier === 'holder') {
-      return `Holder Benefits: ${discountedPacks} packs at 50% off!`;
+      return (
+        <div className="space-y-4">
+          <Alert className="bg-blue-500/10 border-blue-500/20">
+            <BadgeCheck className="h-5 w-5 text-blue-500" />
+            <AlertDescription className="flex items-center gap-2">
+              <span className="font-semibold text-blue-500">Holder Benefits:</span>
+            </AlertDescription>
+          </Alert>
+          <div className="flex items-center gap-2 text-blue-500">
+            <Percent className="h-4 w-4" />
+            <span>{discountedPacks} Discounted Packs</span>
+            <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+              50% OFF
+            </Badge>
+          </div>
+        </div>
+      );
     }
     return null;
   };
 
-  const benefitsMessage = getBenefitsMessage();
-
   return (
     <div className="space-y-4">
-      {isConnected && benefitsMessage && (
-        <Alert className="bg-green-500/10 border-green-500/20 text-green-500">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            {benefitsMessage}
-          </AlertDescription>
-        </Alert>
-      )}
+      {isConnected && getBenefitsDisplay()}
 
       <div className="flex gap-4 justify-center">
         <Button
