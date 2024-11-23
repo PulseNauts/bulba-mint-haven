@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Loader2, Crown, BadgeCheck, BadgeDollarSign, Gift, Percent, Shark } from "lucide-react";
+import { Loader2, Crown, BadgeCheck, BadgeDollarSign, Gift, Percent, Fish } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { HolderTier } from "@/hooks/useHolderEligibility";
 import { Badge } from "@/components/ui/badge";
@@ -62,7 +62,7 @@ export const MintControls = ({
       return (
         <div className="space-y-4">
           <Alert className="bg-cyan-500/10 border-cyan-500/20">
-            <Shark className="h-5 w-5 text-cyan-500" />
+            <Fish className="h-5 w-5 text-cyan-500" />
             <AlertDescription className="flex items-center gap-2">
               <span className="font-semibold text-cyan-500">Shark Benefits Active:</span>
             </AlertDescription>
