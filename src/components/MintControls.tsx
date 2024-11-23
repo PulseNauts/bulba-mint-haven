@@ -37,7 +37,7 @@ export const MintControls = ({
           <Alert className="bg-purple-500/10 border-purple-500/20">
             <Crown className="h-5 w-5 text-purple-500" />
             <AlertDescription className="flex items-center gap-2">
-              <span className="font-semibold text-purple-500">Whale Benefits:</span>
+              <span className="font-semibold text-purple-500">Whale Benefits Active:</span>
             </AlertDescription>
           </Alert>
           <div className="flex flex-col gap-2">
@@ -64,7 +64,7 @@ export const MintControls = ({
           <Alert className="bg-blue-500/10 border-blue-500/20">
             <BadgeCheck className="h-5 w-5 text-blue-500" />
             <AlertDescription className="flex items-center gap-2">
-              <span className="font-semibold text-blue-500">Holder Benefits:</span>
+              <span className="font-semibold text-blue-500">Holder Benefits Active:</span>
             </AlertDescription>
           </Alert>
           <div className="flex items-center gap-2 text-blue-500">
@@ -78,6 +78,16 @@ export const MintControls = ({
       );
     }
     return null;
+  };
+
+  const getMintButtonText = () => {
+    if (!isConnected) return 'Connect Wallet';
+    
+    const packText = mintAmount > 1 ? 'Packs' : 'Pack';
+    if (tier === 'whale' && mintAmount <= freePacks) {
+      return `Mint ${mintAmount} FREE ${packText}`;
+    }
+    return `Mint ${mintAmount} ${packText}`;
   };
 
   return (
@@ -115,9 +125,7 @@ export const MintControls = ({
         {isMinting ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : null}
-        {!isConnected 
-          ? 'Connect Wallet'
-          : `Mint ${mintAmount} Pack${mintAmount > 1 ? 's' : ''}`}
+        {getMintButtonText()}
       </Button>
     </div>
   );
