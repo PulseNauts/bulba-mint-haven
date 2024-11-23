@@ -1,8 +1,7 @@
 import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACT_CONFIG } from '@/config/contract';
 import { CONTRACT_ABI } from '@/config/abi';
-import whaleHolders1 from '../data/whaleHolders.json';
-import whaleHolders2 from '../data/whaleHolders2.json';
+import whaleHolders from '../data/whaleHolders.json';
 import holders1 from '../data/holders.json';
 import holders2 from '../data/holders2.json';
 import holders3 from '../data/holders3.json';
@@ -49,11 +48,8 @@ export const useHolderEligibility = (): HolderEligibility => {
     }
   });
 
-  // Combine whale holders from both files
-  const allWhaleHolders = [
-    ...whaleHolders1.whaleHolders,
-    ...whaleHolders2.whaleHolders
-  ];
+  // Get all whale holders from the single file
+  const allWhaleHolders = whaleHolders.whaleHolders;
 
   // Combine regular holders from all files
   const allHolders = [
