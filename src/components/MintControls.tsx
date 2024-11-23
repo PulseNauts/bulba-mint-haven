@@ -45,7 +45,7 @@ export const MintControls = ({
               <Gift className="h-4 w-4" />
               <span>1 FREE Pack</span>
               <Badge variant="secondary" className="bg-green-500/10 text-green-500">
-                Value: {CONTRACT_CONFIG.mintPrice / 1e18} PLS
+                Value: {Number(CONTRACT_CONFIG.mintPrice) / 1e18} PLS
               </Badge>
             </div>
             <div className="flex items-center gap-2 text-blue-500">
