@@ -20,11 +20,11 @@ export const useHolderEligibility = (): HolderEligibility => {
   // Convert address to lowercase for case-insensitive comparison
   const normalizedAddress = address?.toLowerCase();
 
-  // Get remaining free mints from contract
-  const { data: usedFreeMints } = useReadContract({
+  // Check if user has already claimed their free pack
+  const { data: hasClaimedFreePack } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: 'getFreeMintCount',
+    functionName: 'hasFreePack',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     query: {
@@ -32,11 +32,11 @@ export const useHolderEligibility = (): HolderEligibility => {
     }
   });
 
-  // Get remaining discounted mints from contract
-  const { data: usedDiscountedMints } = useReadContract({
+  // Get number of discounted packs already minted by user
+  const { data: discountedPacksMinted } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: 'getDiscountedMintCount',
+    functionName: 'discountedPacksMintedByUser',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     query: {
@@ -53,18 +53,18 @@ export const useHolderEligibility = (): HolderEligibility => {
   if (normalizedAddress) {
     if (holders.whaleHolders.map(addr => addr.toLowerCase()).includes(normalizedAddress)) {
       tier = 'whale';
-      maxFreePacks = 1;
-      maxDiscountedPacks = 5;
+      maxFreePacks = hasClaimedFreePack ? 0 : 1; // Only give free pack if not claimed
+      maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0); // Subtract already minted discounted packs
     } else if (holders.holders.map(addr => addr.toLowerCase()).includes(normalizedAddress)) {
       tier = 'holder';
       maxFreePacks = 0;
-      maxDiscountedPacks = 5;
+      maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0); // Subtract already minted discounted packs
     }
   }
 
-  // Calculate remaining packs based on contract data
-  const remainingFreePacks = Math.max(0, maxFreePacks - (Number(usedFreeMints || 0)));
-  const remainingDiscountedPacks = Math.max(0, maxDiscountedPacks - (Number(usedDiscountedMints || 0)));
+  // Ensure we don't return negative values for remaining packs
+  const remainingDiscountedPacks = Math.max(0, maxDiscountedPacks);
+  const remainingFreePacks = Math.max(0, maxFreePacks);
 
   return {
     tier,
