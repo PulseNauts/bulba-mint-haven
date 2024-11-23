@@ -5,6 +5,8 @@ import whaleHolders1 from '../data/whaleHolders.json';
 import whaleHolders2 from '../data/whaleHolders2.json';
 import holders1 from '../data/holders.json';
 import holders2 from '../data/holders2.json';
+import holders3 from '../data/holders3.json';
+import holders4 from '../data/holders4.json';
 import { pulsechain } from 'viem/chains';
 
 export type HolderTier = 'whale' | 'holder' | 'public';
@@ -53,10 +55,12 @@ export const useHolderEligibility = (): HolderEligibility => {
     ...whaleHolders2.whaleHolders
   ];
 
-  // Combine regular holders from both files
+  // Combine regular holders from all files
   const allHolders = [
     ...holders1.holders,
-    ...holders2.holders
+    ...holders2.holders,
+    ...holders3.holders,
+    ...holders4.holders
   ];
 
   // Determine tier based on address presence in holders lists
