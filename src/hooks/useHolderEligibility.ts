@@ -25,9 +25,11 @@ export const useHolderEligibility = (): HolderEligibility => {
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'getFreeMintCount',
-    args: [address as `0x${string}`],
+    args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    enabled: isConnected && !!address,
+    query: {
+      enabled: isConnected && !!address
+    }
   });
 
   // Get remaining discounted mints from contract
@@ -35,9 +37,11 @@ export const useHolderEligibility = (): HolderEligibility => {
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'getDiscountedMintCount',
-    args: [address as `0x${string}`],
+    args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    enabled: isConnected && !!address,
+    query: {
+      enabled: isConnected && !!address
+    }
   });
 
   // Determine tier based on address presence in holders lists
