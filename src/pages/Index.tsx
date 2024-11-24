@@ -1,7 +1,8 @@
-import { useAccount, useConnect, useChainId, useSwitchChain, useDisconnect } from "wagmi";
+import { useAccount, useConnect, useChainId, useSwitchChain, useDisconnect, useReadContract } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { useToast } from "@/components/ui/use-toast";
 import { CONTRACT_CONFIG } from "@/config/contract";
+import { CONTRACT_ABI } from "@/config/abi";
 import { Link } from "react-router-dom";
 import { useHolderEligibility } from "@/hooks/useHolderEligibility";
 import { useMinting } from "@/hooks/useMinting";
@@ -12,6 +13,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
 import { LogOut, Package, Info } from "lucide-react";
+import { formatEther } from "viem";
 
 const Index = () => {
   const { toast } = useToast();
@@ -22,6 +24,16 @@ const Index = () => {
   const { disconnect } = useDisconnect();
   const { tier, freePacks, discountedPacks, maxMintAmount } = useHolderEligibility();
   const { mintAmount, setMintAmount, mint, isMinting } = useMinting(tier, freePacks, discountedPacks);
+
+  // Fetch mint price from contract
+  const { data: mintPrice } = useReadContract({
+    address: CONTRACT_CONFIG.address as `0x${string}`,
+    abi: CONTRACT_ABI,
+    functionName: 'mintPrice',
+  });
+
+  const formattedPrice = mintPrice ? `${Number(formatEther(mintPrice)).toLocaleString()} PLS` : 'Loading...';
+  const discountedFormattedPrice = mintPrice ? `${(Number(formatEther(mintPrice)) / 2).toLocaleString()} PLS` : 'Loading...';
 
   const handleConnect = async () => {
     try {
@@ -113,7 +125,10 @@ const Index = () => {
               </div>
               <ul className="space-y-2 text-custom-light/80">
                 <li>• {CONTRACT_CONFIG.cardsPerPack} cards per pack</li>
-                <li>• Mint Price: {Number(CONTRACT_CONFIG.mintPrice) / 1e18} PLS</li>
+                <li>• Regular Price: {formattedPrice}</li>
+                {(tier === 'whale' || tier === 'holder') && (
+                  <li>• Discounted Price: {discountedFormattedPrice}</li>
+                )}
                 <li>• Maximum supply: {CONTRACT_CONFIG.totalPacks} packs</li>
               </ul>
             </div>

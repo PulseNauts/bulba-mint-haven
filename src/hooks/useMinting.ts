@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt, useReadContract } from 'wagmi';
 import { CONTRACT_CONFIG } from '@/config/contract';
 import { CONTRACT_ABI } from '@/config/abi';
 import { useToast } from "@/components/ui/use-toast";
@@ -13,7 +13,16 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
   const { isLoading: isWaiting } = useWaitForTransactionReceipt({ hash });
   const { address } = useAccount();
 
+  // Fetch mint price from contract
+  const { data: mintPrice } = useReadContract({
+    address: CONTRACT_CONFIG.address as `0x${string}`,
+    abi: CONTRACT_ABI,
+    functionName: 'mintPrice',
+  });
+
   const calculateMintPrice = (amount: number) => {
+    if (!mintPrice) return BigInt(0);
+    
     let totalPrice = BigInt(0);
     let remainingAmount = amount;
 
@@ -26,15 +35,13 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
     // Handle discounted packs for both whales and sharks
     if ((tier === 'whale' || tier === 'holder') && discountedPacks > 0 && remainingAmount > 0) {
       const discountedAmount = Math.min(discountedPacks, remainingAmount);
-      const discountedPrice = BigInt(CONTRACT_CONFIG.discountedPrice);
-      totalPrice += discountedPrice * BigInt(discountedAmount);
+      totalPrice += (mintPrice * BigInt(discountedAmount)) / BigInt(2);
       remainingAmount -= discountedAmount;
     }
 
     // Handle remaining packs at full price
     if (remainingAmount > 0) {
-      const fullPrice = BigInt(CONTRACT_CONFIG.mintPrice);
-      totalPrice += fullPrice * BigInt(remainingAmount);
+      totalPrice += mintPrice * BigInt(remainingAmount);
     }
 
     return totalPrice;
@@ -42,16 +49,16 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
 
   const mint = async () => {
     try {
-      if (!address) return;
+      if (!address || !mintPrice) return;
 
-      const mintPrice = calculateMintPrice(mintAmount);
+      const calculatedPrice = calculateMintPrice(mintAmount);
 
       await writeContract({
         address: CONTRACT_CONFIG.address as `0x${string}`,
         abi: CONTRACT_ABI,
         functionName: 'mintPacks',
         args: [BigInt(mintAmount)],
-        value: mintPrice,
+        value: calculatedPrice,
         account: address as `0x${string}`,
         chain: pulsechain,
       });
