@@ -60,7 +60,8 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
         functionName: 'mintPacks',
         args: [BigInt(mintAmount)],
         value: calculatedPrice,
-        chainId: pulsechain.id,
+        chain: pulsechain,
+        account: address as `0x${string}`,
       });
       
       toast({
