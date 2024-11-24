@@ -19,17 +19,18 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
     let totalPrice = BigInt(0);
     let remainingAmount = amount;
 
-    // Handle free packs for whales (only if they have remaining free packs)
+    // Handle free packs for whales first (if they have any remaining)
     if (tier === 'whale' && freePacks > 0 && remainingAmount > 0) {
       const freePacksToUse = Math.min(freePacks, remainingAmount);
       remainingAmount -= freePacksToUse;
     }
 
-    // Handle discounted packs for whales and holders (only if they have remaining discounted packs)
-    if (['whale', 'holder'].includes(tier) && discountedPacks > 0 && remainingAmount > 0) {
-      const discountedAmount = Math.min(discountedPacks, remainingAmount);
-      totalPrice += (mintPrice / BigInt(2)) * BigInt(discountedAmount);
-      remainingAmount -= discountedAmount;
+    // Handle discounted packs for both whales and holders
+    if ((tier === 'whale' || tier === 'holder') && discountedPacks > 0 && remainingAmount > 0) {
+      const discountedPacksToUse = Math.min(discountedPacks, remainingAmount);
+      // Apply 50% discount
+      totalPrice += (mintPrice * BigInt(discountedPacksToUse)) / BigInt(2);
+      remainingAmount -= discountedPacksToUse;
     }
 
     // Handle remaining packs at full price
@@ -42,14 +43,14 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
 
   const mint = async () => {
     try {
-      const mintPrice = calculateMintPrice(mintAmount);
+      const totalPrice = calculateMintPrice(mintAmount);
 
       await writeContract({
         address: CONTRACT_CONFIG.address as `0x${string}`,
         abi: CONTRACT_ABI,
         functionName: 'mintPacks',
         args: [BigInt(mintAmount)],
-        value: mintPrice,
+        value: totalPrice,
         chain: pulsechain,
         account: address as `0x${string}`
       });
@@ -59,6 +60,7 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
         description: `Successfully minted ${mintAmount} pack${mintAmount > 1 ? 's' : ''}!`,
       });
     } catch (error) {
+      console.error('Minting error:', error);
       toast({
         variant: "destructive",
         title: "Minting Error",
