@@ -28,6 +28,6 @@ export const useContractData = () => {
   return {
     totalMinted: Number(totalMinted || 0),
     totalPacks: Number(totalPacks || CONTRACT_CONFIG.totalPacks),
-    mintPrice: mintPrice || BigInt(CONTRACT_CONFIG.mintPrice)
+    mintPrice: mintPrice || BigInt(0)
   };
 };
