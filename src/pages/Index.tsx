@@ -1,8 +1,7 @@
-import { useAccount, useConnect, useChainId, useSwitchChain, useDisconnect, useReadContract } from "wagmi";
+import { useAccount, useConnect, useChainId, useSwitchChain, useDisconnect } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { useToast } from "@/components/ui/use-toast";
 import { CONTRACT_CONFIG } from "@/config/contract";
-import { CONTRACT_ABI } from "@/config/abi";
 import { Link } from "react-router-dom";
 import { useHolderEligibility } from "@/hooks/useHolderEligibility";
 import { useMinting } from "@/hooks/useMinting";
@@ -12,9 +11,7 @@ import { CollectionStats } from "@/components/CollectionStats";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
-import { LogOut, Package, Info, Loader2 } from "lucide-react";
-import { formatEther } from "viem";
-import { pulsechain } from 'viem/chains';
+import { LogOut, Package, Info } from "lucide-react";
 
 const Index = () => {
   const { toast } = useToast();
@@ -24,33 +21,7 @@ const Index = () => {
   const { switchChain } = useSwitchChain();
   const { disconnect } = useDisconnect();
   const { tier, freePacks, discountedPacks, maxMintAmount } = useHolderEligibility();
-  const { mintAmount, setMintAmount, mint, isMinting, isPriceLoading } = useMinting(tier, freePacks, discountedPacks);
-
-  // Fetch mint price from contract
-  const { data: mintPrice } = useReadContract({
-    address: CONTRACT_CONFIG.address as `0x${string}`,
-    abi: CONTRACT_ABI,
-    functionName: 'mintPrice',
-    chainId: pulsechain.id,
-  });
-
-  const formattedPrice = isPriceLoading ? (
-    <span className="flex items-center gap-2">
-      <Loader2 className="h-4 w-4 animate-spin" />
-      Loading...
-    </span>
-  ) : mintPrice ? (
-    `${Number(formatEther(mintPrice)).toLocaleString()} PLS`
-  ) : 'Price unavailable';
-
-  const discountedFormattedPrice = isPriceLoading ? (
-    <span className="flex items-center gap-2">
-      <Loader2 className="h-4 w-4 animate-spin" />
-      Loading...
-    </span>
-  ) : mintPrice ? (
-    `${(Number(formatEther(mintPrice)) / 2).toLocaleString()} PLS`
-  ) : 'Price unavailable';
+  const { mintAmount, setMintAmount, mint, isMinting } = useMinting(tier, freePacks, discountedPacks);
 
   const handleConnect = async () => {
     try {
@@ -142,10 +113,7 @@ const Index = () => {
               </div>
               <ul className="space-y-2 text-custom-light/80">
                 <li>• {CONTRACT_CONFIG.cardsPerPack} cards per pack</li>
-                <li>• Regular Price: {formattedPrice}</li>
-                {(tier === 'whale' || tier === 'holder') && (
-                  <li>• Discounted Price: {discountedFormattedPrice}</li>
-                )}
+                <li>• Mint Price: {Number(CONTRACT_CONFIG.mintPrice) / 1e18} PLS</li>
                 <li>• Maximum supply: {CONTRACT_CONFIG.totalPacks} packs</li>
               </ul>
             </div>
