@@ -5,6 +5,7 @@ import { CONTRACT_ABI } from '@/config/abi';
 import { useToast } from "@/components/ui/use-toast";
 import { pulsechain } from 'viem/chains';
 import { HolderTier } from './useHolderEligibility';
+import { useContractData } from './useContractData';
 
 export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks: number) => {
   const [mintAmount, setMintAmount] = useState(1);
@@ -12,6 +13,7 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
   const { writeContract, data: hash } = useWriteContract();
   const { isLoading: isWaiting } = useWaitForTransactionReceipt({ hash });
   const { address } = useAccount();
+  const { mintPrice } = useContractData();
 
   const calculateMintPrice = (amount: number) => {
     let totalPrice = BigInt(0);
@@ -26,13 +28,13 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
     // Handle discounted packs for whales and holders (only if they have remaining discounted packs)
     if (['whale', 'holder'].includes(tier) && discountedPacks > 0 && remainingAmount > 0) {
       const discountedAmount = Math.min(discountedPacks, remainingAmount);
-      totalPrice += BigInt(CONTRACT_CONFIG.discountedPrice) * BigInt(discountedAmount);
+      totalPrice += (mintPrice / BigInt(2)) * BigInt(discountedAmount);
       remainingAmount -= discountedAmount;
     }
 
     // Handle remaining packs at full price
     if (remainingAmount > 0) {
-      totalPrice += BigInt(CONTRACT_CONFIG.mintPrice) * BigInt(remainingAmount);
+      totalPrice += mintPrice * BigInt(remainingAmount);
     }
 
     return totalPrice;
@@ -48,8 +50,8 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
         functionName: 'mintPacks',
         args: [BigInt(mintAmount)],
         value: mintPrice,
-        account: address as `0x${string}`,
         chain: pulsechain,
+        account: address as `0x${string}`
       });
       
       toast({
