@@ -12,6 +12,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
 import { LogOut, Package, Info } from "lucide-react";
+import { useContractData } from "@/hooks/useContractData";
 
 const Index = () => {
   const { toast } = useToast();
@@ -22,6 +23,7 @@ const Index = () => {
   const { disconnect } = useDisconnect();
   const { tier, freePacks, discountedPacks, maxMintAmount } = useHolderEligibility();
   const { mintAmount, setMintAmount, mint, isMinting } = useMinting(tier, freePacks, discountedPacks);
+  const { mintPrice } = useContractData();
 
   const handleConnect = async () => {
     try {
@@ -113,7 +115,7 @@ const Index = () => {
               </div>
               <ul className="space-y-2 text-custom-light/80">
                 <li>• {CONTRACT_CONFIG.cardsPerPack} cards per pack</li>
-                <li>• Mint Price: {Number(CONTRACT_CONFIG.mintPrice) / 1e18} PLS</li>
+                <li>• Mint Price: {Number(mintPrice) / 1e18} PLS</li>
                 <li>• Maximum supply: {CONTRACT_CONFIG.totalPacks} packs</li>
               </ul>
             </div>
