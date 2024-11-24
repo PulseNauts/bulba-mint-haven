@@ -17,14 +17,14 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
     let totalPrice = BigInt(0);
     let remainingAmount = amount;
 
-    // Handle free packs for whales (only if they have remaining free packs)
+    // Handle free packs for whales
     if (tier === 'whale' && freePacks > 0 && remainingAmount > 0) {
       const freePacksToUse = Math.min(freePacks, remainingAmount);
       remainingAmount -= freePacksToUse;
     }
 
-    // Handle discounted packs for whales and holders (only if they have remaining discounted packs)
-    if (['whale', 'holder'].includes(tier) && discountedPacks > 0 && remainingAmount > 0) {
+    // Handle discounted packs for both whales and sharks
+    if ((tier === 'whale' || tier === 'holder') && discountedPacks > 0 && remainingAmount > 0) {
       const discountedAmount = Math.min(discountedPacks, remainingAmount);
       totalPrice += BigInt(CONTRACT_CONFIG.discountedPrice) * BigInt(discountedAmount);
       remainingAmount -= discountedAmount;

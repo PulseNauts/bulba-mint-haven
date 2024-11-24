@@ -18,6 +18,71 @@ interface MintControlsProps {
   discountedPacks: number;
 }
 
+// Helper functions to keep the component smaller
+const calculateMintText = (tier: HolderTier, mintAmount: number, freePacks: number) => {
+  const packText = mintAmount > 1 ? 'Packs' : 'Pack';
+  if (tier === 'whale' && mintAmount <= freePacks) {
+    return `Mint ${mintAmount} FREE ${packText}`;
+  }
+  if ((tier === 'whale' || tier === 'holder') && mintAmount <= freePacks + 5) {
+    return `Mint ${mintAmount} Discounted ${packText}`;
+  }
+  return `Mint ${mintAmount} ${packText}`;
+};
+
+const BenefitsDisplay = ({ tier, freePacks, discountedPacks }: { 
+  tier: HolderTier; 
+  freePacks: number; 
+  discountedPacks: number; 
+}) => {
+  if (tier === 'whale') {
+    return (
+      <Alert className="bg-purple-500/10 border-purple-500/20">
+        <Crown className="h-5 w-5 text-purple-500" />
+        <AlertDescription className="flex flex-col gap-2">
+          <span className="font-semibold text-purple-500">Whale Benefits Active:</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            <div className="flex items-center gap-2 text-green-500 bg-green-500/10 p-2 rounded-md">
+              <Gift className="h-4 w-4 shrink-0" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">FREE Packs</span>
+                <span className="text-xs">{freePacks} remaining</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-blue-500 bg-blue-500/10 p-2 rounded-md">
+              <BadgeDollarSign className="h-4 w-4 shrink-0" />
+              <div className="flex flex-col">
+                <span className="text-sm font-medium">50% OFF Packs</span>
+                <span className="text-xs">{discountedPacks} remaining</span>
+              </div>
+            </div>
+          </div>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  
+  if (tier === 'holder') {
+    return (
+      <Alert className="bg-cyan-500/10 border-cyan-500/20">
+        <Fish className="h-5 w-5 text-cyan-500" />
+        <AlertDescription className="flex flex-col gap-2">
+          <span className="font-semibold text-cyan-500">Shark Benefits Active:</span>
+          <div className="flex items-center gap-2 text-cyan-500 bg-cyan-500/10 p-2 rounded-md mt-2">
+            <Percent className="h-4 w-4 shrink-0" />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">50% OFF Packs</span>
+              <span className="text-xs">{discountedPacks} remaining</span>
+            </div>
+          </div>
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  
+  return null;
+};
+
 export const MintControls = ({
   mintAmount,
   setMintAmount,
@@ -30,69 +95,9 @@ export const MintControls = ({
   freePacks,
   discountedPacks
 }: MintControlsProps) => {
-  const getBenefitsDisplay = () => {
-    if (tier === 'whale') {
-      return (
-        <div className="space-y-4">
-          <Alert className="bg-purple-500/10 border-purple-500/20">
-            <Crown className="h-5 w-5 text-purple-500" />
-            <AlertDescription className="flex flex-col gap-2">
-              <span className="font-semibold text-purple-500">Whale Benefits Active:</span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                <div className="flex items-center gap-2 text-green-500 bg-green-500/10 p-2 rounded-md">
-                  <Gift className="h-4 w-4 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">FREE Packs</span>
-                    <span className="text-xs">{freePacks} remaining</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-blue-500 bg-blue-500/10 p-2 rounded-md">
-                  <BadgeDollarSign className="h-4 w-4 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">50% OFF Packs</span>
-                    <span className="text-xs">{discountedPacks} remaining</span>
-                  </div>
-                </div>
-              </div>
-            </AlertDescription>
-          </Alert>
-        </div>
-      );
-    } else if (tier === 'holder') {
-      return (
-        <div className="space-y-4">
-          <Alert className="bg-cyan-500/10 border-cyan-500/20">
-            <Fish className="h-5 w-5 text-cyan-500" />
-            <AlertDescription className="flex flex-col gap-2">
-              <span className="font-semibold text-cyan-500">Shark Benefits Active:</span>
-              <div className="flex items-center gap-2 text-cyan-500 bg-cyan-500/10 p-2 rounded-md mt-2">
-                <Percent className="h-4 w-4 shrink-0" />
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">50% OFF Packs</span>
-                  <span className="text-xs">{discountedPacks} remaining</span>
-                </div>
-              </div>
-            </AlertDescription>
-          </Alert>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const getMintButtonText = () => {
-    if (!isConnected) return 'Connect Wallet';
-    
-    const packText = mintAmount > 1 ? 'Packs' : 'Pack';
-    if (tier === 'whale' && mintAmount <= freePacks) {
-      return `Mint ${mintAmount} FREE ${packText}`;
-    }
-    return `Mint ${mintAmount} ${packText}`;
-  };
-
   return (
     <div className="space-y-4">
-      {isConnected && getBenefitsDisplay()}
+      {isConnected && <BenefitsDisplay tier={tier} freePacks={freePacks} discountedPacks={discountedPacks} />}
 
       <div className="flex gap-4 justify-center">
         <Button
@@ -125,7 +130,7 @@ export const MintControls = ({
         {isMinting ? (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
         ) : null}
-        {getMintButtonText()}
+        {!isConnected ? 'Connect Wallet' : calculateMintText(tier, mintAmount, freePacks)}
       </Button>
     </div>
   );
