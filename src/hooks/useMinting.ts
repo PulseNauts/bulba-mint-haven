@@ -52,6 +52,7 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
         functionName: 'mintPacks',
         args: [BigInt(mintAmount)],
         value: mintPrice,
+        account: address as `0x${string}`,
         chain: pulsechain,
       });
       
