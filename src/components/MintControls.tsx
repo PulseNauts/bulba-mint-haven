@@ -36,26 +36,26 @@ export const MintControls = ({
         <div className="space-y-4">
           <Alert className="bg-purple-500/10 border-purple-500/20">
             <Crown className="h-5 w-5 text-purple-500" />
-            <AlertDescription className="flex items-center gap-2">
+            <AlertDescription className="flex flex-col gap-2">
               <span className="font-semibold text-purple-500">Whale Benefits Active:</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                <div className="flex items-center gap-2 text-green-500 bg-green-500/10 p-2 rounded-md">
+                  <Gift className="h-4 w-4 shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">FREE Packs</span>
+                    <span className="text-xs">{freePacks} remaining</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-blue-500 bg-blue-500/10 p-2 rounded-md">
+                  <BadgeDollarSign className="h-4 w-4 shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">50% OFF Packs</span>
+                    <span className="text-xs">{discountedPacks} remaining</span>
+                  </div>
+                </div>
+              </div>
             </AlertDescription>
           </Alert>
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-green-500">
-              <Gift className="h-4 w-4" />
-              <span>1 FREE Pack</span>
-              <Badge variant="secondary" className="bg-green-500/10 text-green-500">
-                Value: {Number(CONTRACT_CONFIG.mintPrice) / 1e18} PLS
-              </Badge>
-            </div>
-            <div className="flex items-center gap-2 text-blue-500">
-              <BadgeDollarSign className="h-4 w-4" />
-              <span>{discountedPacks} Discounted Packs</span>
-              <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
-                50% OFF
-              </Badge>
-            </div>
-          </div>
         </div>
       );
     } else if (tier === 'holder') {
@@ -63,17 +63,17 @@ export const MintControls = ({
         <div className="space-y-4">
           <Alert className="bg-cyan-500/10 border-cyan-500/20">
             <Fish className="h-5 w-5 text-cyan-500" />
-            <AlertDescription className="flex items-center gap-2">
+            <AlertDescription className="flex flex-col gap-2">
               <span className="font-semibold text-cyan-500">Shark Benefits Active:</span>
+              <div className="flex items-center gap-2 text-cyan-500 bg-cyan-500/10 p-2 rounded-md mt-2">
+                <Percent className="h-4 w-4 shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">50% OFF Packs</span>
+                  <span className="text-xs">{discountedPacks} remaining</span>
+                </div>
+              </div>
             </AlertDescription>
           </Alert>
-          <div className="flex items-center gap-2 text-cyan-500">
-            <Percent className="h-4 w-4" />
-            <span>{discountedPacks} Discounted Packs</span>
-            <Badge variant="secondary" className="bg-cyan-500/10 text-cyan-500">
-              50% OFF
-            </Badge>
-          </div>
         </div>
       );
     }
