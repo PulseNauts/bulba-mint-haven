@@ -12,8 +12,9 @@ import { CollectionStats } from "@/components/CollectionStats";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
-import { LogOut, Package, Info } from "lucide-react";
+import { LogOut, Package, Info, Loader2 } from "lucide-react";
 import { formatEther } from "viem";
+import { pulsechain } from 'viem/chains';
 
 const Index = () => {
   const { toast } = useToast();
@@ -23,17 +24,33 @@ const Index = () => {
   const { switchChain } = useSwitchChain();
   const { disconnect } = useDisconnect();
   const { tier, freePacks, discountedPacks, maxMintAmount } = useHolderEligibility();
-  const { mintAmount, setMintAmount, mint, isMinting } = useMinting(tier, freePacks, discountedPacks);
+  const { mintAmount, setMintAmount, mint, isMinting, isPriceLoading } = useMinting(tier, freePacks, discountedPacks);
 
   // Fetch mint price from contract
   const { data: mintPrice } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'mintPrice',
+    chainId: pulsechain.id,
   });
 
-  const formattedPrice = mintPrice ? `${Number(formatEther(mintPrice)).toLocaleString()} PLS` : 'Loading...';
-  const discountedFormattedPrice = mintPrice ? `${(Number(formatEther(mintPrice)) / 2).toLocaleString()} PLS` : 'Loading...';
+  const formattedPrice = isPriceLoading ? (
+    <span className="flex items-center gap-2">
+      <Loader2 className="h-4 w-4 animate-spin" />
+      Loading...
+    </span>
+  ) : mintPrice ? (
+    `${Number(formatEther(mintPrice)).toLocaleString()} PLS`
+  ) : 'Price unavailable';
+
+  const discountedFormattedPrice = isPriceLoading ? (
+    <span className="flex items-center gap-2">
+      <Loader2 className="h-4 w-4 animate-spin" />
+      Loading...
+    </span>
+  ) : mintPrice ? (
+    `${(Number(formatEther(mintPrice)) / 2).toLocaleString()} PLS`
+  ) : 'Price unavailable';
 
   const handleConnect = async () => {
     try {

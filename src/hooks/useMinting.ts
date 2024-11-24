@@ -9,15 +9,16 @@ import { HolderTier } from './useHolderEligibility';
 export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks: number) => {
   const [mintAmount, setMintAmount] = useState(1);
   const { toast } = useToast();
-  const { writeContract, data: hash } = useWriteContract();
+  const { writeContract, data: hash, isPending } = useWriteContract();
   const { isLoading: isWaiting } = useWaitForTransactionReceipt({ hash });
   const { address } = useAccount();
 
   // Fetch mint price from contract
-  const { data: mintPrice } = useReadContract({
+  const { data: mintPrice, isLoading: isPriceLoading } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'mintPrice',
+    chainId: pulsechain.id,
   });
 
   const calculateMintPrice = (amount: number) => {
@@ -59,8 +60,7 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
         functionName: 'mintPacks',
         args: [BigInt(mintAmount)],
         value: calculatedPrice,
-        account: address as `0x${string}`,
-        chain: pulsechain,
+        chainId: pulsechain.id,
       });
       
       toast({
@@ -81,6 +81,7 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
     mintAmount,
     setMintAmount,
     mint,
-    isMinting: isWaiting
+    isMinting: isPending || isWaiting,
+    isPriceLoading
   };
 };
