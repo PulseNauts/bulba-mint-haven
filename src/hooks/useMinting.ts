@@ -26,13 +26,15 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
     // Handle discounted packs for both whales and sharks
     if ((tier === 'whale' || tier === 'holder') && discountedPacks > 0 && remainingAmount > 0) {
       const discountedAmount = Math.min(discountedPacks, remainingAmount);
-      totalPrice += BigInt(CONTRACT_CONFIG.discountedPrice) * BigInt(discountedAmount);
+      const discountedPrice = BigInt(CONTRACT_CONFIG.discountedPrice);
+      totalPrice += discountedPrice * BigInt(discountedAmount);
       remainingAmount -= discountedAmount;
     }
 
     // Handle remaining packs at full price
     if (remainingAmount > 0) {
-      totalPrice += BigInt(CONTRACT_CONFIG.mintPrice) * BigInt(remainingAmount);
+      const fullPrice = BigInt(CONTRACT_CONFIG.mintPrice);
+      totalPrice += fullPrice * BigInt(remainingAmount);
     }
 
     return totalPrice;
@@ -40,6 +42,8 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
 
   const mint = async () => {
     try {
+      if (!address) return;
+
       const mintPrice = calculateMintPrice(mintAmount);
 
       await writeContract({
@@ -48,7 +52,6 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
         functionName: 'mintPacks',
         args: [BigInt(mintAmount)],
         value: mintPrice,
-        account: address as `0x${string}`,
         chain: pulsechain,
       });
       
@@ -56,11 +59,12 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
         title: "Success!",
         description: `Successfully minted ${mintAmount} pack${mintAmount > 1 ? 's' : ''}!`,
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Minting error:', error);
       toast({
         variant: "destructive",
         title: "Minting Error",
-        description: "Failed to mint. Please try again.",
+        description: error?.message || "Failed to mint. Please try again.",
       });
     }
   };
