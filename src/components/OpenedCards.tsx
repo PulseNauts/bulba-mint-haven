@@ -130,36 +130,51 @@ export const OpenedCards = () => {
         </h2>
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-          {cards.map((card) => (
-            <motion.div
-              key={card.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3 }}
-              onClick={() => setSelectedCard(card)}
-            >
-              <Card className="group relative aspect-square overflow-hidden bg-gradient-to-br from-custom-lightGreen to-custom-mediumGreen hover:shadow-xl transition-all duration-300 cursor-pointer">
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                {card.image ? (
-                  <img
-                    src={card.image}
-                    alt={card.name || `Card #${card.id}`}
-                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-custom-darkGreen">Loading...</span>
+          {cards.map((card) => {
+            const isVideo = card.image?.toLowerCase().endsWith('.mp4');
+            
+            return (
+              <motion.div
+                key={card.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3 }}
+                onClick={() => setSelectedCard(card)}
+              >
+                <Card className="group relative aspect-square overflow-hidden bg-gradient-to-br from-custom-lightGreen to-custom-mediumGreen hover:shadow-xl transition-all duration-300 cursor-pointer">
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                  {card.image ? (
+                    isVideo ? (
+                      <video
+                        src={card.image}
+                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                      />
+                    ) : (
+                      <img
+                        src={card.image}
+                        alt={card.name || `Card #${card.id}`}
+                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    )
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <span className="text-custom-darkGreen">Loading...</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <p className="text-white text-sm font-semibold truncate">
+                      {card.name || `Card #${card.id}`}
+                    </p>
                   </div>
-                )}
-                <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="text-white text-sm font-semibold truncate">
-                    {card.name || `Card #${card.id}`}
-                  </p>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
 
         {isLoading && cards.length === 0 && (
