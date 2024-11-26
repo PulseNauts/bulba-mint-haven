@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { createConfig, http, WagmiProvider } from 'wagmi';
 import { pulsechain } from 'viem/chains';
-import { RainbowKitProvider, getDefaultWallets, connectorsForWallets } from '@rainbow-me/rainbowkit';
+import { RainbowKitProvider, connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { 
   injectedWallet,
   rainbowWallet,
@@ -23,11 +23,11 @@ const connectors = connectorsForWallets([
   {
     groupName: 'Recommended',
     wallets: [
-      injectedWallet,
-      rainbowWallet,
-      walletConnectWallet,
-      metaMaskWallet,
-      trustWallet
+      injectedWallet({ projectId }),
+      rainbowWallet({ projectId }),
+      walletConnectWallet({ projectId }),
+      metaMaskWallet({ projectId }),
+      trustWallet({ projectId })
     ],
   },
 ], { 
