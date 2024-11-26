@@ -63,11 +63,17 @@ const Index = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex justify-between items-center"
+          className="flex flex-col space-y-4 md:flex-row md:justify-between md:items-center"
         >
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-custom-primary to-custom-accent bg-clip-text text-transparent">
-            Bulbasaur Cards
-          </h1>
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-custom-primary to-custom-accent bg-clip-text text-transparent">
+              Bulbasaur Cards: Unlock Exclusive Collectibles!
+            </h1>
+            <p className="text-lg text-custom-light/80 max-w-2xl leading-relaxed">
+              Dive into the PulseChain community and discover unique cards with exciting rarities. 
+              Secure your packs, find hidden gems, and join the next big thing in digital collectibles today!
+            </p>
+          </div>
           <div className="glass-effect z-10">
             <ConnectButton />
           </div>
