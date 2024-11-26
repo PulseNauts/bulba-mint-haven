@@ -190,5 +190,31 @@ export const CONTRACT_ABI = [
     outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
     type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "holder",
+        type: "address"
+      }
+    ],
+    name: "isWhaleHolder",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "holder",
+        type: "address"
+      }
+    ],
+    name: "isBulbaHolder",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function"
   }
 ] as const;

@@ -1,9 +1,6 @@
 import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACT_CONFIG } from '@/config/contract';
 import { CONTRACT_ABI } from '@/config/abi';
-import whaleHolders from '../data/whaleHolders.json';
-import holders1 from '../data/holders.json';
-import holders2 from '../data/holders2.json';
 import { pulsechain } from 'viem/chains';
 
 export type HolderTier = 'whale' | 'holder' | 'public';
@@ -19,8 +16,29 @@ export interface HolderEligibility {
 export const useHolderEligibility = (): HolderEligibility => {
   const { address, isConnected } = useAccount();
 
-  // Convert address to lowercase for case-insensitive comparison
-  const normalizedAddress = address?.toLowerCase();
+  // Check if user is a whale holder
+  const { data: isWhale, isLoading: isLoadingWhale } = useReadContract({
+    address: CONTRACT_CONFIG.address as `0x${string}`,
+    abi: CONTRACT_ABI,
+    functionName: 'isWhaleHolder',
+    args: address ? [address as `0x${string}`] : undefined,
+    chainId: pulsechain.id,
+    query: {
+      enabled: isConnected && !!address
+    }
+  });
+
+  // Check if user is a regular holder
+  const { data: isHolder, isLoading: isLoadingHolder } = useReadContract({
+    address: CONTRACT_CONFIG.address as `0x${string}`,
+    abi: CONTRACT_ABI,
+    functionName: 'isBulbaHolder',
+    args: address ? [address as `0x${string}`] : undefined,
+    chainId: pulsechain.id,
+    query: {
+      enabled: isConnected && !!address
+    }
+  });
 
   // Check if user has already claimed their free pack
   const { data: hasClaimedFreePack } = useReadContract({
@@ -46,31 +64,20 @@ export const useHolderEligibility = (): HolderEligibility => {
     }
   });
 
-  // Get all whale holders from the single file
-  const allWhaleHolders = whaleHolders.whaleHolders;
-
-  // Combine regular holders from both files
-  const allHolders = [
-    ...holders1.holders,
-    ...holders2.holders
-  ];
-
-  // Determine tier based on address presence in holders lists
+  // Determine tier and benefits
   let tier: HolderTier = 'public';
   let maxFreePacks = 0;
   let maxDiscountedPacks = 0;
   let maxMintAmount = 10; // Default max mint amount for all users
 
-  if (normalizedAddress) {
-    if (allWhaleHolders.map(addr => addr.toLowerCase()).includes(normalizedAddress)) {
-      tier = 'whale';
-      maxFreePacks = hasClaimedFreePack ? 0 : 1; // Only give free pack if not claimed
-      maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0); // Subtract already minted discounted packs
-    } else if (allHolders.map(addr => addr.toLowerCase()).includes(normalizedAddress)) {
-      tier = 'holder';
-      maxFreePacks = 0;
-      maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0); // Subtract already minted discounted packs
-    }
+  if (isWhale) {
+    tier = 'whale';
+    maxFreePacks = hasClaimedFreePack ? 0 : 1;
+    maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0);
+  } else if (isHolder) {
+    tier = 'holder';
+    maxFreePacks = 0;
+    maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0);
   }
 
   // Ensure we don't return negative values for remaining packs
@@ -82,6 +89,6 @@ export const useHolderEligibility = (): HolderEligibility => {
     freePacks: remainingFreePacks,
     discountedPacks: remainingDiscountedPacks,
     maxMintAmount,
-    isLoading: !isConnected
+    isLoading: isLoadingWhale || isLoadingHolder
   };
 };
