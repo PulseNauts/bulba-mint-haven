@@ -2,6 +2,7 @@ import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACT_CONFIG } from '@/config/contract';
 import { CONTRACT_ABI } from '@/config/abi';
 import { pulsechain } from 'viem/chains';
+import { useToast } from "@/components/ui/use-toast";
 
 export type HolderTier = 'whale' | 'holder' | 'public';
 
@@ -15,6 +16,7 @@ export interface HolderEligibility {
 
 export const useHolderEligibility = (): HolderEligibility => {
   const { address, isConnected } = useAccount();
+  const { toast } = useToast();
 
   // Check if user is a whale holder
   const { data: isWhale, isLoading: isLoadingWhale } = useReadContract({
@@ -24,7 +26,16 @@ export const useHolderEligibility = (): HolderEligibility => {
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     query: {
-      enabled: isConnected && !!address
+      enabled: isConnected && !!address,
+      onSuccess: (data) => {
+        console.log(`[Holder Check] Address ${address} Whale status:`, data);
+        if (data) {
+          toast({
+            title: "Whale Benefits Active",
+            description: "You have access to whale-tier benefits including free and discounted packs!",
+          });
+        }
+      }
     }
   });
 
@@ -36,7 +47,16 @@ export const useHolderEligibility = (): HolderEligibility => {
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     query: {
-      enabled: isConnected && !!address
+      enabled: isConnected && !!address,
+      onSuccess: (data) => {
+        console.log(`[Holder Check] Address ${address} Shark status:`, data);
+        if (data && !isWhale) {
+          toast({
+            title: "Shark Benefits Active",
+            description: "You have access to discounted packs!",
+          });
+        }
+      }
     }
   });
 
@@ -48,7 +68,10 @@ export const useHolderEligibility = (): HolderEligibility => {
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     query: {
-      enabled: isConnected && !!address
+      enabled: isConnected && !!address,
+      onSuccess: (data) => {
+        console.log(`[Free Pack Status] Address ${address} has claimed free pack:`, data);
+      }
     }
   });
 
@@ -60,7 +83,10 @@ export const useHolderEligibility = (): HolderEligibility => {
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     query: {
-      enabled: isConnected && !!address
+      enabled: isConnected && !!address,
+      onSuccess: (data) => {
+        console.log(`[Discount Status] Address ${address} discounted packs minted:`, Number(data || 0));
+      }
     }
   });
 
@@ -74,10 +100,14 @@ export const useHolderEligibility = (): HolderEligibility => {
     tier = 'whale';
     maxFreePacks = hasClaimedFreePack ? 0 : 1;
     maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0);
+    console.log(`[Benefits] Whale tier active - Free packs: ${maxFreePacks}, Discounted packs: ${maxDiscountedPacks}`);
   } else if (isHolder) {
     tier = 'holder';
     maxFreePacks = 0;
     maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0);
+    console.log(`[Benefits] Shark tier active - Discounted packs: ${maxDiscountedPacks}`);
+  } else {
+    console.log('[Benefits] Public tier active - No special benefits');
   }
 
   // Ensure we don't return negative values for remaining packs
