@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Space_Grotesk:wght@300;400;500;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,42 +8,54 @@
   :root {
     --background: 231 24% 14%;
     --foreground: 240 10% 97%;
-
     --card: 232 24% 20%;
     --card-foreground: 240 10% 97%;
-
     --popover: 232 24% 20%;
     --popover-foreground: 240 10% 97%;
-
     --primary: 252 82% 74%;
     --primary-foreground: 240 10% 97%;
-
     --secondary: 260 29% 54%;
     --secondary-foreground: 240 10% 97%;
-
     --muted: 232 24% 30%;
     --muted-foreground: 240 5% 84%;
-
     --accent: 302 84% 60%;
     --accent-foreground: 240 10% 97%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 240 10% 97%;
-
     --border: 232 24% 30%;
     --input: 232 24% 30%;
     --ring: 252 82% 74%;
-
     --radius: 0.75rem;
   }
 }
 
 @layer base {
   * {
-    @apply border-border font-['Space_Grotesk'];
+    @apply border-border font-['Outfit'];
   }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-['Outfit'] font-bold;
+  }
+  
+  h1 {
+    @apply text-4xl md:text-5xl tracking-tight;
+  }
+  
+  h2 {
+    @apply text-3xl md:text-4xl;
+  }
+  
+  h3 {
+    @apply text-2xl md:text-3xl;
+  }
+  
+  p {
+    @apply font-['Outfit'] text-lg leading-relaxed;
+  }
+  
   body {
-    @apply bg-custom-dark text-custom-light;
+    @apply bg-custom-dark text-custom-light font-['Outfit'];
     background-image: radial-gradient(circle at center, rgba(155, 135, 245, 0.1) 0%, transparent 70%);
   }
 }
