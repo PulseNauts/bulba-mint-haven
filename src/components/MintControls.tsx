@@ -36,7 +36,8 @@ export const MintControls = ({
   const [freePacks, setFreePacks] = useState(0);
   const [discountedPacks, setDiscountedPacks] = useState(0);
 
-  const { data: isWhale, refetch: refetchWhale } = useReadContract({
+  // Read Contract: Whale Holder
+  const { data: isWhale, isLoading: isLoadingWhale } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "isWhaleHolder",
@@ -45,7 +46,8 @@ export const MintControls = ({
     enabled: isConnected && !!address,
   });
 
-  const { data: isHolder, refetch: refetchHolder } = useReadContract({
+  // Read Contract: Bulba Holder
+  const { data: isHolder, isLoading: isLoadingHolder } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "isBulbaHolder",
@@ -54,7 +56,8 @@ export const MintControls = ({
     enabled: isConnected && !!address,
   });
 
-  const { data: hasClaimedFreePack, refetch: refetchFreePack } = useReadContract({
+  // Read Contract: Free Pack
+  const { data: hasClaimedFreePack } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "hasFreePack",
@@ -63,7 +66,8 @@ export const MintControls = ({
     enabled: isConnected && !!address && Boolean(isWhale),
   });
 
-  const { data: discountedPacksMinted, refetch: refetchDiscounted } = useReadContract({
+  // Read Contract: Discounted Packs Minted
+  const { data: discountedPacksMinted } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "discountedPacksMintedByUser",
@@ -72,44 +76,42 @@ export const MintControls = ({
     enabled: isConnected && !!address && (Boolean(isWhale) || Boolean(isHolder)),
   });
 
+  // Evaluate Tier and Benefits
   useEffect(() => {
-    if (!isConnected || !address) return;
+    if (!isConnected || !address) {
+      console.log("User is not connected.");
+      return;
+    }
 
-    const updateEligibility = async () => {
-      console.log(`Fetching eligibility for address: ${address}`);
-      try {
-        await Promise.all([refetchWhale(), refetchHolder(), refetchFreePack(), refetchDiscounted()]);
+    console.log(`Evaluating eligibility for address: ${address}`);
+    console.log("isWhale:", isWhale);
+    console.log("isHolder:", isHolder);
 
-        if (isWhale) {
-          console.log("Whale status detected");
-          setTier("whale");
-          setFreePacks(hasClaimedFreePack ? 0 : 1);
-          setDiscountedPacks(5 - (Number(discountedPacksMinted) || 0));
-        } else if (isHolder) {
-          console.log("Holder status detected");
-          setTier("holder");
-          setFreePacks(0);
-          setDiscountedPacks(5 - (Number(discountedPacksMinted) || 0));
-        } else {
-          console.log("Public tier detected - no special benefits");
-          setTier("public");
-          setFreePacks(0);
-          setDiscountedPacks(0);
-        }
+    if (isWhale) {
+      console.log("Whale status confirmed.");
+      setTier("whale");
+      setFreePacks(hasClaimedFreePack ? 0 : 1);
+      setDiscountedPacks(5 - (Number(discountedPacksMinted) || 0));
+    } else if (isHolder) {
+      console.log("Holder status confirmed.");
+      setTier("holder");
+      setFreePacks(0);
+      setDiscountedPacks(5 - (Number(discountedPacksMinted) || 0));
+    } else {
+      console.log("No special status detected. Public tier.");
+      setTier("public");
+      setFreePacks(0);
+      setDiscountedPacks(0);
+    }
 
-        console.log("Eligibility status updated:", {
-          tier,
-          freePacks,
-          discountedPacks,
-        });
-      } catch (error) {
-        console.error("Error fetching eligibility status:", error);
-      }
-    };
+    console.log("Eligibility Results:", {
+      tier,
+      freePacks,
+      discountedPacks,
+    });
+  }, [isWhale, isHolder, hasClaimedFreePack, discountedPacksMinted, address, isConnected]);
 
-    updateEligibility();
-  }, [address, isConnected, isWhale, isHolder, hasClaimedFreePack, discountedPacksMinted]);
-
+  // Display Benefits
   const getBenefitsDisplay = () => {
     if (tier === "whale") {
       return (
@@ -139,6 +141,7 @@ export const MintControls = ({
     return null;
   };
 
+  // Mint Button Text
   const getMintButtonText = () => {
     const packText = mintAmount > 1 ? "Packs" : "Pack";
     if (tier === "whale" && mintAmount <= freePacks) {
