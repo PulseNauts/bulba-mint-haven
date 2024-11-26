@@ -21,9 +21,11 @@ const Index = () => {
   const { tier, freePacks, discountedPacks, maxMintAmount, checkEligibility } = useHolderEligibility();
   const { writeContractAsync } = useWriteContract();
   const { mintAmount, setMintAmount, isMinting } = useMinting(tier, freePacks, discountedPacks);
+
   const { ref: imageRef, inView } = useInView({
     threshold: 0.1,
     triggerOnce: false,
+    rootMargin: '50px',  // Added margin to trigger animation earlier
   });
 
   const handleMint = async (price: bigint) => {
@@ -124,11 +126,14 @@ const Index = () => {
               animate={inView ? {
                 scale: [1, 1.02, 1],
                 rotate: [0, 3, 0]
-              } : {}}
+              } : {
+                scale: 1,
+                rotate: 0
+              }}
               transition={{
                 duration: 2,
                 ease: "easeInOut",
-                repeat: Infinity,
+                repeat: inView ? Infinity : 0,
                 repeatType: "reverse"
               }}
             >
