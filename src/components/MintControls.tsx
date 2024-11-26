@@ -18,9 +18,6 @@ interface MintControlsProps {
   onMint: () => void;
   onConnect: () => void;
   maxMintAmount: number;
-  tier: HolderTier;
-  freePacks: number;
-  discountedPacks: number;
 }
 
 export const MintControls = ({
@@ -79,6 +76,33 @@ export const MintControls = ({
     }
   });
 
+  const calculateMintPrice = () => {
+    let freePacks = 0;
+    let discountedPacks = 0;
+    let fullPricePacks = mintAmount;
+
+    // Handle free pack for whales
+    if (isWhale && !hasClaimedFreePack) {
+      freePacks = 1;
+      fullPricePacks -= 1;
+    }
+
+    // Handle discounted packs for whales and holders
+    if ((isWhale || isHolder) && fullPricePacks > 0) {
+      const remainingDiscountedPacks = 5 - Number(discountedPacksMinted || 0);
+      if (remainingDiscountedPacks > 0) {
+        discountedPacks = Math.min(remainingDiscountedPacks, fullPricePacks);
+        fullPricePacks -= discountedPacks;
+      }
+    }
+
+    // Calculate total price
+    const mintPrice = BigInt(90000) * BigInt(10 ** 18); // 90000 PLS
+    const totalPrice = (discountedPacks * Number(mintPrice) / 2) + (fullPricePacks * Number(mintPrice));
+    
+    return BigInt(totalPrice);
+  };
+
   const getMintButtonText = () => {
     if (!isConnected) return 'Connect Wallet';
     if (!whaleCheckSuccess || !holderCheckSuccess) return 'Checking Status...';
@@ -119,14 +143,12 @@ export const MintControls = ({
         )}
       </Button>
 
-      {isConnected && (
-        <Link to="/open-packs" className="block">
-          <Button className="w-full" variant="outline">
-            <Package className="mr-2 h-4 w-4" />
-            Go to My Profile
-          </Button>
-        </Link>
-      )}
+      <Link to="/open-packs" className="block">
+        <Button className="w-full" variant="outline">
+          <Package className="mr-2 h-4 w-4" />
+          Go to My Profile
+        </Button>
+      </Link>
     </div>
   );
 };
