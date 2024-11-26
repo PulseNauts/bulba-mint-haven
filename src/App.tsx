@@ -30,7 +30,7 @@ const connectors = connectorsForWallets([
       trustWallet({ projectId })
     ],
   },
-]);
+], { projectId });
 
 const config = createConfig({
   chains: [pulsechain],
