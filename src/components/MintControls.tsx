@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Loader2, Crown, Fish, Gift, BadgeDollarSign, Percent } from "lucide-react";
+import { Loader2, Crown, Fish } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAccount, useReadContract } from "wagmi";
-import { CONTRACT_CONFIG } from "@/config/contract";
-import { CONTRACT_ABI } from "@/config/abi";
-import { pulsechain } from "viem/chains";
+import { useAccount, useReadContract } from 'wagmi';
+import { CONTRACT_CONFIG } from '@/config/contract';
+import { CONTRACT_ABI } from '@/config/abi';
+import { pulsechain } from 'viem/chains';
 import { useToast } from "@/components/ui/use-toast";
 
-export type HolderTier = "whale" | "holder" | "public";
+export type HolderTier = 'whale' | 'holder' | 'public';
 
 interface MintControlsProps {
   mintAmount: number;
@@ -33,143 +33,157 @@ export const MintControls = ({
 
   console.log(`Checking eligibility for address: ${address}`);
 
-  // Fetch eligibility status from contract
-  const { data: isWhale } = useReadContract({
+  const { data: isWhale, isLoading: isLoadingWhale, refetch: refetchWhale } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: "isWhaleHolder",
+    functionName: 'isWhaleHolder',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     enabled: isConnected && !!address,
   });
 
-  const { data: isHolder } = useReadContract({
+  const { data: isHolder, isLoading: isLoadingHolder, refetch: refetchHolder } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: "isBulbaHolder",
+    functionName: 'isBulbaHolder',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     enabled: isConnected && !!address,
   });
 
-  const { data: hasClaimedFreePack } = useReadContract({
+  const { data: hasClaimedFreePack, refetch: refetchFreePack } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: "hasFreePack",
+    functionName: 'hasFreePack',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     enabled: isConnected && !!address && Boolean(isWhale),
   });
 
-  const { data: discountedPacksMinted } = useReadContract({
+  const { data: discountedPacksMinted, refetch: refetchDiscounted } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: "discountedPacksMintedByUser",
+    functionName: 'discountedPacksMintedByUser',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     enabled: isConnected && !!address && (Boolean(isWhale) || Boolean(isHolder)),
   });
 
-  let tier: HolderTier = "public";
+  let tier: HolderTier = 'public';
   let maxFreePacks = 0;
   let maxDiscountedPacks = 0;
 
   if (isWhale) {
-    console.log("Whale status detected");
-    tier = "whale";
+    console.log('Whale status detected');
+    tier = 'whale';
     maxFreePacks = hasClaimedFreePack ? 0 : 1;
     maxDiscountedPacks = 5 - (Number(discountedPacksMinted) || 0);
     console.log(`Whale benefits: ${maxFreePacks} free packs, ${maxDiscountedPacks} discounted packs remaining`);
   } else if (isHolder) {
-    console.log("Holder status detected");
-    tier = "holder";
+    console.log('Holder status detected');
+    tier = 'holder';
     maxFreePacks = 0;
     maxDiscountedPacks = 5 - (Number(discountedPacksMinted) || 0);
     console.log(`Holder benefits: ${maxDiscountedPacks} discounted packs remaining`);
   } else {
-    console.log("Public tier detected - no special benefits");
+    console.log('Public tier detected - no special benefits');
   }
 
   const freePacks = Math.max(0, maxFreePacks);
   const discountedPacks = Math.max(0, maxDiscountedPacks);
 
+  const checkEligibility = async () => {
+    console.log('Refreshing eligibility status...');
+    try {
+      await Promise.all([
+        refetchWhale(),
+        refetchHolder(),
+        refetchFreePack(),
+        refetchDiscounted()
+      ]);
+      console.log('Eligibility status refreshed successfully');
+      toast({
+        title: "Status Updated",
+        description: `Current tier: ${tier.toUpperCase()}`,
+      });
+    } catch (error) {
+      console.error('Error refreshing eligibility:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to refresh eligibility status.",
+      });
+    }
+  };
+
+  console.log('Rendering MintControls with:', { tier, freePacks, discountedPacks, mintAmount });
+
   const getBenefitsDisplay = () => {
-    if (tier === "whale") {
+    if (!tier) {
+      console.log('No tier detected, skipping benefits display');
+      return null;
+    }
+
+    if (tier === 'whale') {
+      console.log('Displaying whale benefits:', { freePacks, discountedPacks });
       return (
-        <Alert className="bg-purple-500/10 border-purple-500/20 rounded-lg shadow-sm">
-          <div className="flex items-center">
-            <Crown className="h-5 w-5 text-purple-500" />
-            <AlertDescription className="flex flex-col gap-2 ml-3">
-              <span className="font-semibold text-purple-500">Whale Benefits Active:</span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                <div className="flex items-center gap-2 text-green-500 bg-green-500/10 p-2 rounded-md">
-                  <Gift className="h-4 w-4 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">FREE Packs</span>
-                    <span className="text-xs">{freePacks} remaining</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-blue-500 bg-blue-500/10 p-2 rounded-md">
-                  <BadgeDollarSign className="h-4 w-4 shrink-0" />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">50% OFF Packs</span>
-                    <span className="text-xs">{discountedPacks} remaining</span>
-                  </div>
-                </div>
-              </div>
-            </AlertDescription>
-          </div>
-        </Alert>
-      );
-    } else if (tier === "holder") {
-      return (
-        <Alert className="bg-cyan-500/10 border-cyan-500/20 rounded-lg shadow-sm">
-          <div className="flex items-center">
-            <Fish className="h-5 w-5 text-cyan-500" />
-            <AlertDescription className="flex flex-col gap-2 ml-3">
-              <span className="font-semibold text-cyan-500">Holder Benefits Active:</span>
-              <div className="flex items-center gap-2 text-cyan-500 bg-cyan-500/10 p-2 rounded-md mt-2">
-                <Percent className="h-4 w-4 shrink-0" />
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium">50% OFF Packs</span>
-                  <span className="text-xs">{discountedPacks} remaining</span>
-                </div>
-              </div>
-            </AlertDescription>
-          </div>
+        <Alert className="bg-purple-500/10 border-purple-500/20">
+          <Crown className="h-5 w-5 text-purple-500" />
+          <AlertDescription>
+            <strong>Whale Benefits Active:</strong>
+            <p>Free Packs: {freePacks}</p>
+            <p>Discounted Packs: {discountedPacks}</p>
+          </AlertDescription>
         </Alert>
       );
     }
+
+    if (tier === 'holder') {
+      console.log('Displaying holder benefits:', { discountedPacks });
+      return (
+        <Alert className="bg-cyan-500/10 border-cyan-500/20">
+          <Fish className="h-5 w-5 text-cyan-500" />
+          <AlertDescription>
+            <strong>Holder Benefits Active:</strong>
+            <p>Discounted Packs: {discountedPacks}</p>
+          </AlertDescription>
+        </Alert>
+      );
+    }
+
+    console.log('No special benefits to display');
     return null;
   };
 
   const getMintButtonText = () => {
-    const packText = mintAmount > 1 ? "Packs" : "Pack";
-    if (tier === "whale" && mintAmount <= freePacks) {
+    if (!isConnected) return 'Connect Wallet';
+
+    const packText = mintAmount > 1 ? 'Packs' : 'Pack';
+    if (tier === 'whale' && mintAmount <= freePacks) {
+      console.log('Displaying free mint button text');
       return `Mint ${mintAmount} FREE ${packText}`;
     }
+    console.log('Displaying standard mint button text');
     return `Mint ${mintAmount} ${packText}`;
   };
 
   return (
-    <div className="space-y-6 max-w-md mx-auto">
+    <div className="space-y-4">
       {getBenefitsDisplay()}
 
-      <div className="flex items-center justify-center gap-4">
+      <div className="flex gap-4 items-center justify-center">
         <Button
           variant="outline"
           onClick={() => setMintAmount(Math.max(1, mintAmount - 1))}
           disabled={mintAmount <= 1}
-          className="text-lg font-semibold"
         >
           -
         </Button>
-        <span className="text-lg font-semibold">{mintAmount}</span>
+        <span className="text-lg font-medium min-w-[2ch] text-center">{mintAmount}</span>
         <Button
           variant="outline"
           onClick={() => setMintAmount(Math.min(maxMintAmount, mintAmount + 1))}
           disabled={mintAmount >= maxMintAmount}
-          className="text-lg font-semibold"
         >
           +
         </Button>
@@ -178,11 +192,11 @@ export const MintControls = ({
       <Button
         onClick={isConnected ? onMint : onConnect}
         disabled={isMinting}
-        className="w-full text-lg py-3 rounded-lg bg-gradient-to-r from-green-500 to-green-400 text-white hover:from-green-600 hover:to-green-500 shadow-lg"
+        className="w-full"
       >
         {isMinting ? (
           <>
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Minting...
           </>
         ) : (
@@ -191,12 +205,17 @@ export const MintControls = ({
       </Button>
 
       {isConnected && (
-        <Button
-          className="w-full text-lg py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-400 text-white hover:from-blue-600 hover:to-blue-500 shadow-lg"
-          variant="outline"
-        >
-          Go to My Profile
-        </Button>
+        <div className="space-y-4">
+          <Button className="w-full" variant="outline">
+            Go to My Profile
+          </Button>
+          <Button className="w-full" variant="outline" onClick={checkEligibility}>
+            Check Holder Status
+          </Button>
+          <Button className="w-full" variant="outline">
+            Placeholder Button
+          </Button>
+        </div>
       )}
     </div>
   );
