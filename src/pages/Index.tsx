@@ -1,4 +1,4 @@
-import { useAccount, useConnect, useChainId, useSwitchChain, useDisconnect, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useAccount, useConnect, useChainId, useSwitchChain, useDisconnect, useWriteContract } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { useToast } from "@/components/ui/use-toast";
 import { CONTRACT_CONFIG } from "@/config/contract";
@@ -12,7 +12,7 @@ import { CollectionStats } from "@/components/CollectionStats";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
-import { LogOut, Package, RefreshCw } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { pulsechain } from 'viem/chains';
 
 const Index = () => {
@@ -23,7 +23,8 @@ const Index = () => {
   const { switchChain } = useSwitchChain();
   const { disconnect } = useDisconnect();
   const { tier, freePacks, discountedPacks, maxMintAmount, checkEligibility } = useHolderEligibility();
-  const { mintAmount, setMintAmount, mint, isMinting } = useMinting(tier, freePacks, discountedPacks);
+  const { writeContractAsync } = useWriteContract();
+  const { mintAmount, setMintAmount, isMinting } = useMinting(tier, freePacks, discountedPacks);
 
   const handleConnect = async () => {
     try {
@@ -72,32 +73,17 @@ const Index = () => {
     }
   };
 
-  const handleCheckStatus = async () => {
-    try {
-      await checkEligibility();
-      toast({
-        title: "Status Updated",
-        description: "Your holder status has been refreshed.",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to check holder status.",
-      });
-    }
-  };
-
   const handleMint = async (price: bigint) => {
+    if (!address) return;
+    
     try {
-      await writeContract({
+      await writeContractAsync({
         address: CONTRACT_CONFIG.address as `0x${string}`,
         abi: CONTRACT_ABI,
         functionName: 'mintPacks',
         args: [BigInt(mintAmount)],
         value: price,
         chain: pulsechain,
-        account: address as `0x${string}`
       });
       
       toast({
@@ -105,6 +91,7 @@ const Index = () => {
         description: `Successfully minted ${mintAmount} pack${mintAmount > 1 ? 's' : ''}!`,
       });
     } catch (error) {
+      console.error('Minting error:', error);
       toast({
         variant: "destructive",
         title: "Minting Error",
@@ -158,26 +145,6 @@ const Index = () => {
               onConnect={handleConnect}
               maxMintAmount={maxMintAmount}
             />
-
-            {isConnected && (
-              <div className="space-y-4 mt-4">
-                <Link to="/open-packs" className="block z-10 relative">
-                  <Button className="w-full glass-effect" variant="outline">
-                    <Package className="mr-2 h-5 w-5" />
-                    Go to My Profile
-                  </Button>
-                </Link>
-                
-                <Button 
-                  className="w-full glass-effect" 
-                  variant="outline"
-                  onClick={handleCheckStatus}
-                >
-                  <RefreshCw className="mr-2 h-5 w-5" />
-                  Check Holder Status
-                </Button>
-              </div>
-            )}
           </GlassCard>
         </motion.div>
 
@@ -201,4 +168,3 @@ const Index = () => {
 };
 
 export default Index;
-
