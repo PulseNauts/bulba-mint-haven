@@ -4,7 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { CONTRACT_CONFIG } from "@/config/contract";
 import { CONTRACT_ABI } from "@/config/abi";
 import { Link } from "react-router-dom";
-
+import { useHolderEligibility } from "@/hooks/useHolderEligibility";
 import { useMinting } from "@/hooks/useMinting";
 import { MintControls } from "@/components/MintControls";
 import { motion } from "framer-motion";
