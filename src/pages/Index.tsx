@@ -11,8 +11,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CollectionStats } from "@/components/CollectionStats";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { Button } from "@/components/ui/button";
-import { Package } from "lucide-react";
 import { pulsechain } from 'viem/chains';
 
 const Index = () => {
@@ -92,25 +90,14 @@ const Index = () => {
             <CollectionStats />
 
             <GlassCard className="p-6 backdrop-blur-lg border border-white/10 hover:border-white/20 transition-all duration-300">
-              <div className="space-y-4">
-                <MintControls
-                  mintAmount={mintAmount}
-                  setMintAmount={setMintAmount}
-                  isConnected={isConnected}
-                  isMinting={isMinting}
-                  onMint={handleMint}
-                  maxMintAmount={maxMintAmount}
-                />
-                
-                {isConnected && (
-                  <Link to="/open-packs" className="block">
-                    <Button className="w-full" variant="outline">
-                      <Package className="mr-2 h-4 w-4" />
-                      Go to My Profile
-                    </Button>
-                  </Link>
-                )}
-              </div>
+              <MintControls
+                mintAmount={mintAmount}
+                setMintAmount={setMintAmount}
+                isConnected={isConnected}
+                isMinting={isMinting}
+                onMint={handleMint}
+                maxMintAmount={maxMintAmount}
+              />
             </GlassCard>
           </motion.div>
 

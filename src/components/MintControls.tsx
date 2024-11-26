@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { BenefitsDisplay } from "./mint/BenefitsDisplay";
 import { MintAmountControls } from "./mint/MintAmountControls";
 import { Link } from "react-router-dom";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 interface MintControlsProps {
   mintAmount: number;
@@ -15,7 +16,6 @@ interface MintControlsProps {
   isConnected: boolean;
   isMinting: boolean;
   onMint: (price: bigint) => void;
-  onConnect?: () => void;
   maxMintAmount: number;
 }
 
@@ -130,21 +130,42 @@ export const MintControls = ({
         maxMintAmount={maxMintAmount}
       />
 
+      {!isConnected && (
+        <div className="glass-effect p-2 rounded-lg">
+          <ConnectButton.Custom>
+            {({ openConnectModal }) => (
+              <Button onClick={openConnectModal} className="w-full">
+                Connect Wallet
+              </Button>
+            )}
+          </ConnectButton.Custom>
+        </div>
+      )}
+
       {isConnected && (
-        <Button
-          onClick={() => onMint(calculateMintPrice())}
-          disabled={isMinting || (!whaleCheckSuccess || !holderCheckSuccess)}
-          className="w-full"
-        >
-          {isMinting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Minting...
-            </>
-          ) : (
-            getMintButtonText()
-          )}
-        </Button>
+        <>
+          <Button
+            onClick={() => onMint(calculateMintPrice())}
+            disabled={isMinting || (!whaleCheckSuccess || !holderCheckSuccess)}
+            className="w-full"
+          >
+            {isMinting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Minting...
+              </>
+            ) : (
+              getMintButtonText()
+            )}
+          </Button>
+
+          <Link to="/open-packs" className="block">
+            <Button className="w-full" variant="outline">
+              <Package className="mr-2 h-4 w-4" />
+              Go to My Profile
+            </Button>
+          </Link>
+        </>
       )}
     </div>
   );
