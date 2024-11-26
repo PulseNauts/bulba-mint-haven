@@ -15,7 +15,7 @@ interface MintControlsProps {
   isConnected: boolean;
   isMinting: boolean;
   onMint: (price: bigint) => void;
-  onConnect: () => void;
+  onConnect?: () => void;
   maxMintAmount: number;
 }
 
