@@ -30,8 +30,17 @@ export const MintControls = ({
   freePacks,
   discountedPacks
 }: MintControlsProps) => {
+  console.log('MintControls Render:', {
+    tier,
+    freePacks,
+    discountedPacks,
+    mintAmount,
+    isConnected
+  });
+
   const getBenefitsDisplay = () => {
     if (tier === 'whale') {
+      console.log('Rendering Whale Benefits:', { freePacks, discountedPacks });
       return (
         <div className="space-y-4">
           <Alert className="bg-purple-500/10 border-purple-500/20">
@@ -59,6 +68,7 @@ export const MintControls = ({
         </div>
       );
     } else if (tier === 'holder') {
+      console.log('Rendering Holder Benefits:', { discountedPacks });
       return (
         <div className="space-y-4">
           <Alert className="bg-cyan-500/10 border-cyan-500/20">
@@ -77,6 +87,7 @@ export const MintControls = ({
         </div>
       );
     }
+    console.log('No special benefits to render');
     return null;
   };
 
