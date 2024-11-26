@@ -3,7 +3,6 @@ import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagm
 import { CONTRACT_CONFIG } from '@/config/contract';
 import { CONTRACT_ABI } from '@/config/abi';
 import { useToast } from "@/components/ui/use-toast";
-import { pulsechain } from 'viem/chains';
 import { HolderTier } from './useHolderEligibility';
 
 export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks: number) => {
@@ -17,6 +16,16 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
     let totalPrice = BigInt(0);
     let remainingAmount = amount;
 
+    const mintPrice = BigInt(CONTRACT_CONFIG.mintPrice);
+    const discountedPrice = BigInt(CONTRACT_CONFIG.discountedPrice);
+
+    console.log('Calculating mint price:', {
+      tier,
+      freePacks,
+      discountedPacks,
+      remainingAmount,
+    });
+
     // Handle free packs for whales
     if (tier === 'whale' && freePacks > 0 && remainingAmount > 0) {
       const freePacksUsed = Math.min(freePacks, remainingAmount);
@@ -26,13 +35,13 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
     // Handle discounted packs for whales and holders
     if ((tier === 'whale' || tier === 'holder') && discountedPacks > 0 && remainingAmount > 0) {
       const discountedAmount = Math.min(discountedPacks, remainingAmount);
-      totalPrice += BigInt(CONTRACT_CONFIG.discountedPrice) * BigInt(discountedAmount);
+      totalPrice += discountedPrice * BigInt(discountedAmount);
       remainingAmount -= discountedAmount;
     }
 
     // Handle remaining packs at full price
     if (remainingAmount > 0) {
-      totalPrice += BigInt(CONTRACT_CONFIG.mintPrice) * BigInt(remainingAmount);
+      totalPrice += mintPrice * BigInt(remainingAmount);
     }
 
     return totalPrice;
@@ -56,7 +65,7 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
         args: [mintAmount],
         value: mintPrice,
         account: address as `0x${string}`,
-        chain: pulsechain,
+        chain: CONTRACT_CONFIG.chain,
       });
 
       toast({
