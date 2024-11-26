@@ -33,8 +33,8 @@ export const MintControls = ({
 
   console.log(`Checking eligibility for address: ${address}`);
 
-  // Fetch eligibility status from contract
-  const { data: isWhale } = useReadContract({
+  // Fetch eligibility status from the contract
+  const { data: isWhale, refetch: refetchWhale } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "isWhaleHolder",
@@ -43,7 +43,7 @@ export const MintControls = ({
     enabled: isConnected && !!address,
   });
 
-  const { data: isHolder } = useReadContract({
+  const { data: isHolder, refetch: refetchHolder } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "isBulbaHolder",
@@ -52,7 +52,7 @@ export const MintControls = ({
     enabled: isConnected && !!address,
   });
 
-  const { data: hasClaimedFreePack } = useReadContract({
+  const { data: hasClaimedFreePack, refetch: refetchFreePack } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "hasFreePack",
@@ -61,7 +61,7 @@ export const MintControls = ({
     enabled: isConnected && !!address && Boolean(isWhale),
   });
 
-  const { data: discountedPacksMinted } = useReadContract({
+  const { data: discountedPacksMinted, refetch: refetchDiscounted } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "discountedPacksMintedByUser",
@@ -70,7 +70,6 @@ export const MintControls = ({
     enabled: isConnected && !!address && (Boolean(isWhale) || Boolean(isHolder)),
   });
 
-  // Determine tier and benefits
   let tier: HolderTier = "public";
   let maxFreePacks = 0;
   let maxDiscountedPacks = 0;
@@ -94,66 +93,57 @@ export const MintControls = ({
   const freePacks = Math.max(0, maxFreePacks);
   const discountedPacks = Math.max(0, maxDiscountedPacks);
 
-  console.log("Rendering MintControls with:", { tier, freePacks, discountedPacks, mintAmount });
-
-  // Display benefits for whale and holder tiers
   const getBenefitsDisplay = () => {
     if (tier === "whale") {
       return (
-        <div className="space-y-4">
-          <Alert className="bg-purple-500/10 border-purple-500/20 rounded-lg shadow-sm">
-            <div className="flex items-center">
-              <Crown className="h-5 w-5 text-purple-500" />
-              <AlertDescription className="flex flex-col gap-2 ml-3">
-                <span className="font-semibold text-purple-500">Whale Benefits Active:</span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-                  <div className="flex items-center gap-2 text-green-500 bg-green-500/10 p-2 rounded-md">
-                    <Gift className="h-4 w-4 shrink-0" />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">FREE Packs</span>
-                      <span className="text-xs">{freePacks} remaining</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-blue-500 bg-blue-500/10 p-2 rounded-md">
-                    <BadgeDollarSign className="h-4 w-4 shrink-0" />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-medium">50% OFF Packs</span>
-                      <span className="text-xs">{discountedPacks} remaining</span>
-                    </div>
+        <Alert className="bg-purple-500/10 border-purple-500/20 rounded-lg shadow-sm">
+          <div className="flex items-center">
+            <Crown className="h-5 w-5 text-purple-500" />
+            <AlertDescription className="flex flex-col gap-2 ml-3">
+              <span className="font-semibold text-purple-500">Whale Benefits Active:</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                <div className="flex items-center gap-2 text-green-500 bg-green-500/10 p-2 rounded-md">
+                  <Gift className="h-4 w-4 shrink-0" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">FREE Packs</span>
+                    <span className="text-xs">{freePacks} remaining</span>
                   </div>
                 </div>
-              </AlertDescription>
-            </div>
-          </Alert>
-        </div>
-      );
-    } else if (tier === "holder") {
-      return (
-        <div className="space-y-4">
-          <Alert className="bg-cyan-500/10 border-cyan-500/20 rounded-lg shadow-sm">
-            <div className="flex items-center">
-              <Fish className="h-5 w-5 text-cyan-500" />
-              <AlertDescription className="flex flex-col gap-2 ml-3">
-                <span className="font-semibold text-cyan-500">Shark Benefits Active:</span>
-                <div className="flex items-center gap-2 text-cyan-500 bg-cyan-500/10 p-2 rounded-md mt-2">
-                  <Percent className="h-4 w-4 shrink-0" />
+                <div className="flex items-center gap-2 text-blue-500 bg-blue-500/10 p-2 rounded-md">
+                  <BadgeDollarSign className="h-4 w-4 shrink-0" />
                   <div className="flex flex-col">
                     <span className="text-sm font-medium">50% OFF Packs</span>
                     <span className="text-xs">{discountedPacks} remaining</span>
                   </div>
                 </div>
-              </AlertDescription>
-            </div>
-          </Alert>
-        </div>
+              </div>
+            </AlertDescription>
+          </div>
+        </Alert>
+      );
+    } else if (tier === "holder") {
+      return (
+        <Alert className="bg-cyan-500/10 border-cyan-500/20 rounded-lg shadow-sm">
+          <div className="flex items-center">
+            <Fish className="h-5 w-5 text-cyan-500" />
+            <AlertDescription className="flex flex-col gap-2 ml-3">
+              <span className="font-semibold text-cyan-500">Holder Benefits Active:</span>
+              <div className="flex items-center gap-2 text-cyan-500 bg-cyan-500/10 p-2 rounded-md mt-2">
+                <Percent className="h-4 w-4 shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-sm font-medium">50% OFF Packs</span>
+                  <span className="text-xs">{discountedPacks} remaining</span>
+                </div>
+              </div>
+            </AlertDescription>
+          </div>
+        </Alert>
       );
     }
     return null;
   };
 
   const getMintButtonText = () => {
-    if (!isConnected) return "Connect Wallet";
-
     const packText = mintAmount > 1 ? "Packs" : "Pack";
     if (tier === "whale" && mintAmount <= freePacks) {
       return `Mint ${mintAmount} FREE ${packText}`;
