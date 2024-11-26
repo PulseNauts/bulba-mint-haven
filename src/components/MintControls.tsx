@@ -5,7 +5,6 @@ import { CONTRACT_CONFIG } from '@/config/contract';
 import { CONTRACT_ABI } from '@/config/abi';
 import { pulsechain } from 'viem/chains';
 import { useToast } from "@/components/ui/use-toast";
-import { HolderTier } from '@/hooks/useHolderEligibility';
 import { BenefitsDisplay } from "./mint/BenefitsDisplay";
 import { MintAmountControls } from "./mint/MintAmountControls";
 import { Link } from "react-router-dom";
@@ -15,7 +14,7 @@ interface MintControlsProps {
   setMintAmount: (amount: number) => void;
   isConnected: boolean;
   isMinting: boolean;
-  onMint: () => void;
+  onMint: (price: bigint) => void;
   onConnect: () => void;
   maxMintAmount: number;
 }
@@ -98,9 +97,14 @@ export const MintControls = ({
 
     // Calculate total price
     const mintPrice = BigInt(90000) * BigInt(10 ** 18); // 90000 PLS
-    const totalPrice = (discountedPacks * Number(mintPrice) / 2) + (fullPricePacks * Number(mintPrice));
+    const totalPrice = BigInt(discountedPacks * Number(mintPrice) / 2) + (BigInt(fullPricePacks) * mintPrice);
     
-    return BigInt(totalPrice);
+    return totalPrice;
+  };
+
+  const handleMint = () => {
+    const price = calculateMintPrice();
+    onMint(price);
   };
 
   const getMintButtonText = () => {
@@ -109,7 +113,7 @@ export const MintControls = ({
 
     const packText = mintAmount > 1 ? 'Packs' : 'Pack';
     if (isWhale && !hasClaimedFreePack) {
-      return `Mint ${mintAmount} FREE ${packText}`;
+      return `Mint ${mintAmount} ${packText} (First Pack Free!)`;
     }
     return `Mint ${mintAmount} ${packText}`;
   };
@@ -129,7 +133,7 @@ export const MintControls = ({
       />
 
       <Button
-        onClick={isConnected ? onMint : onConnect}
+        onClick={isConnected ? handleMint : onConnect}
         disabled={isMinting || (!whaleCheckSuccess || !holderCheckSuccess)}
         className="w-full"
       >

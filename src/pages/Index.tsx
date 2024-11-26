@@ -86,6 +86,31 @@ const Index = () => {
     }
   };
 
+  const handleMint = async (price: bigint) => {
+    try {
+      await writeContract({
+        address: CONTRACT_CONFIG.address as `0x${string}`,
+        abi: CONTRACT_ABI,
+        functionName: 'mintPacks',
+        args: [BigInt(mintAmount)],
+        value: price,
+        chain: pulsechain,
+        account: address as `0x${string}`
+      });
+      
+      toast({
+        title: "Success!",
+        description: `Successfully minted ${mintAmount} pack${mintAmount > 1 ? 's' : ''}!`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Minting Error",
+        description: "Failed to mint. Please try again.",
+      });
+    }
+  };
+
   return (
     <PageContainer>
       <motion.div
@@ -127,12 +152,9 @@ const Index = () => {
               setMintAmount={setMintAmount}
               isConnected={isConnected}
               isMinting={isMinting}
-              onMint={mint}
+              onMint={handleMint}
               onConnect={handleConnect}
               maxMintAmount={maxMintAmount}
-              tier={tier}
-              freePacks={freePacks}
-              discountedPacks={discountedPacks}
             />
 
             {isConnected && (

@@ -1,6 +1,7 @@
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Crown, Fish } from "lucide-react";
 import { HolderTier } from '@/hooks/useHolderEligibility';
+import { memo } from 'react';
 
 interface BenefitsDisplayProps {
   tier: HolderTier;
@@ -8,14 +9,12 @@ interface BenefitsDisplayProps {
   discountedPacks: number;
 }
 
-export const BenefitsDisplay = ({ tier, freePacks, discountedPacks }: BenefitsDisplayProps) => {
+export const BenefitsDisplay = memo(({ tier, freePacks, discountedPacks }: BenefitsDisplayProps) => {
   if (!tier) {
-    console.log('No tier detected, skipping benefits display');
     return null;
   }
 
   if (tier === 'whale') {
-    console.log('Displaying whale benefits:', { freePacks, discountedPacks });
     return (
       <Alert className="bg-purple-500/10 border-purple-500/20">
         <Crown className="h-5 w-5 text-purple-500" />
@@ -29,7 +28,6 @@ export const BenefitsDisplay = ({ tier, freePacks, discountedPacks }: BenefitsDi
   }
 
   if (tier === 'holder') {
-    console.log('Displaying holder benefits:', { discountedPacks });
     return (
       <Alert className="bg-cyan-500/10 border-cyan-500/20">
         <Fish className="h-5 w-5 text-cyan-500" />
@@ -41,6 +39,7 @@ export const BenefitsDisplay = ({ tier, freePacks, discountedPacks }: BenefitsDi
     );
   }
 
-  console.log('No special benefits to display');
   return null;
-};
+});
+
+BenefitsDisplay.displayName = 'BenefitsDisplay';
