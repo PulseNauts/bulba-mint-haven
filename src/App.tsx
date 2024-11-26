@@ -5,34 +5,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { createConfig, http, WagmiProvider } from 'wagmi';
 import { pulsechain } from 'viem/chains';
-import { RainbowKitProvider, connectorsForWallets } from '@rainbow-me/rainbowkit';
-import { 
-  injectedWallet,
-  rainbowWallet,
-  walletConnectWallet,
-  trustWallet,
-  metaMaskWallet,
-} from '@rainbow-me/rainbowkit/wallets';
+import { RainbowKitProvider, getDefaultWallets } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import Index from "./pages/Index";
 import OpenPacks from "./pages/OpenPacks";
 
 const projectId = import.meta.env.VITE_WALLET_CONNECT_ID;
 
-const connectors = connectorsForWallets([
-  {
-    groupName: 'Recommended',
-    wallets: [
-      injectedWallet,
-      rainbowWallet,
-      walletConnectWallet,
-      metaMaskWallet,
-      trustWallet
-    ],
-  },
-], { 
+const { wallets } = getDefaultWallets({
+  appName: 'Bulbasaur Card Minting',
   projectId,
-  appName: 'Bulbasaur Card Minting'
+  chains: [pulsechain],
 });
 
 const config = createConfig({
@@ -42,7 +25,7 @@ const config = createConfig({
   },
   syncConnectedChain: true,
   ssr: true,
-  connectors,
+  connectors: wallets,
 });
 
 const queryClient = new QueryClient({
