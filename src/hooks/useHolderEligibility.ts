@@ -29,6 +29,9 @@ export const useHolderEligibility = (): HolderEligibility => {
     chainId: pulsechain.id,
     query: {
       enabled: isConnected && !!address,
+      retry: false,
+      staleTime: 0,
+      gcTime: 0,
       onSuccess: (data) => {
         console.log('🐋 [Whale Check] Raw contract response:', data);
         console.log(`🐋 [Whale Check] Address ${address} Whale status:`, Boolean(data));
@@ -48,6 +51,9 @@ export const useHolderEligibility = (): HolderEligibility => {
     chainId: pulsechain.id,
     query: {
       enabled: isConnected && !!address,
+      retry: false,
+      staleTime: 0,
+      gcTime: 0,
       onSuccess: (data) => {
         console.log('🦈 [Holder Check] Raw contract response:', data);
         console.log(`🦈 [Holder Check] Address ${address} Shark status:`, Boolean(data));
