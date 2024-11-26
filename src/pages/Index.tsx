@@ -22,7 +22,7 @@ const Index = () => {
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   const { disconnect } = useDisconnect();
- 
+  const { tier, freePacks, discountedPacks, maxMintAmount, checkEligibility } = useHolderEligibility();
   const { writeContractAsync } = useWriteContract();
   const { mintAmount, setMintAmount, isMinting } = useMinting(tier, freePacks, discountedPacks);
 
