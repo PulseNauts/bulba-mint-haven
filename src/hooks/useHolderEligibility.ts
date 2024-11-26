@@ -18,7 +18,7 @@ export const useHolderEligibility = (): HolderEligibility => {
   const { address, isConnected } = useAccount();
   const { toast } = useToast();
 
-  // Check if user is a whale holder with detailed logging
+  // Check whale status independently
   const { data: isWhale, isLoading: isLoadingWhale } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
@@ -43,7 +43,7 @@ export const useHolderEligibility = (): HolderEligibility => {
     }
   });
 
-  // Check if user is a regular holder with detailed logging
+  // Check holder status independently
   const { data: isHolder, isLoading: isLoadingHolder } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
@@ -51,7 +51,7 @@ export const useHolderEligibility = (): HolderEligibility => {
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     query: {
-      enabled: isConnected && !!address && !isWhale,
+      enabled: isConnected && !!address,
       onSuccess: (data) => {
         console.log(`[Holder Check] Address ${address} Shark status:`, data);
         if (data && !isWhale) {
@@ -67,7 +67,7 @@ export const useHolderEligibility = (): HolderEligibility => {
     }
   });
 
-  // Check if user has already claimed their free pack
+  // Check free pack claim status only for whales
   const { data: hasClaimedFreePack } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
@@ -77,12 +77,12 @@ export const useHolderEligibility = (): HolderEligibility => {
     query: {
       enabled: isConnected && !!address && isWhale,
       onSuccess: (data) => {
-        console.log(`[Free Pack Status] Address ${address} has claimed free pack:`, data);
+        console.log(`[Free Pack Status] Address ${address} has claimed free pack:`, !data);
       }
     }
   });
 
-  // Get number of discounted packs already minted by user
+  // Get discounted packs minted for both whales and holders
   const { data: discountedPacksMinted } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
@@ -90,18 +90,12 @@ export const useHolderEligibility = (): HolderEligibility => {
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     query: {
-      enabled: isConnected && !!address && (isWhale || isHolder),
+      enabled: isConnected && !!address,
       onSuccess: (data) => {
         console.log(`[Discount Status] Address ${address} discounted packs minted:`, Number(data || 0));
       }
     }
   });
-
-  // Determine tier and benefits with enhanced logging
-  let tier: HolderTier = 'public';
-  let maxFreePacks = 0;
-  let maxDiscountedPacks = 0;
-  let maxMintAmount = 10;
 
   console.log('[Status Debug] Current values:', {
     isWhale,
@@ -110,23 +104,30 @@ export const useHolderEligibility = (): HolderEligibility => {
     discountedPacksMinted: Number(discountedPacksMinted || 0)
   });
 
-  if (isWhale) {
+  // Determine tier and benefits
+  let tier: HolderTier = 'public';
+  let maxFreePacks = 0;
+  let maxDiscountedPacks = 0;
+  let maxMintAmount = 10;
+
+  // Important: Check whale status first and independently
+  if (isWhale === true) {
     console.log('[Whale Benefits] Activating whale tier benefits');
     tier = 'whale';
     maxFreePacks = hasClaimedFreePack ? 0 : 1;
     maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0);
     console.log(`[Benefits] Whale tier active - Free packs: ${maxFreePacks}, Discounted packs: ${maxDiscountedPacks}`);
-  } else if (isHolder) {
+  } else if (isHolder === true) {
     console.log('[Shark Benefits] Activating shark tier benefits');
     tier = 'holder';
     maxFreePacks = 0;
     maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0);
     console.log(`[Benefits] Shark tier active - Discounted packs: ${maxDiscountedPacks}`);
   } else {
-    console.log('[Benefits] Public tier active - No special benefits');
+    console.log('[Public Benefits] No special benefits active');
   }
 
-  // Ensure we don't return negative values for remaining packs
+  // Ensure we don't return negative values
   const remainingDiscountedPacks = Math.max(0, maxDiscountedPacks);
   const remainingFreePacks = Math.max(0, maxFreePacks);
 
