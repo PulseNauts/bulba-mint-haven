@@ -3,7 +3,6 @@ import { injected } from "wagmi/connectors";
 import { useToast } from "@/components/ui/use-toast";
 import { CONTRACT_CONFIG } from "@/config/contract";
 import { Link } from "react-router-dom";
-import { useHolderEligibility } from "@/hooks/useHolderEligibility";
 import { useMinting } from "@/hooks/useMinting";
 import { MintControls } from "@/components/MintControls";
 import { motion } from "framer-motion";
@@ -20,8 +19,7 @@ const Index = () => {
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   const { disconnect } = useDisconnect();
-  const { tier, freePacks, discountedPacks, maxMintAmount, checkEligibility } = useHolderEligibility();
-  const { mintAmount, setMintAmount, mint, isMinting } = useMinting(tier, freePacks, discountedPacks);
+  const { mintAmount, setMintAmount, mint, isMinting } = useMinting('public', 0, 0);
 
   const handleConnect = async () => {
     try {
@@ -70,22 +68,6 @@ const Index = () => {
     }
   };
 
-  const handleCheckStatus = async () => {
-    try {
-      await checkEligibility();
-      toast({
-        title: "Status Updated",
-        description: "Your holder status has been refreshed.",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to check holder status.",
-      });
-    }
-  };
-
   return (
     <PageContainer>
       <motion.div
@@ -129,31 +111,8 @@ const Index = () => {
               isMinting={isMinting}
               onMint={mint}
               onConnect={handleConnect}
-              maxMintAmount={maxMintAmount}
-              tier={tier}
-              freePacks={freePacks}
-              discountedPacks={discountedPacks}
+              maxMintAmount={10}
             />
-
-            {isConnected && (
-              <div className="space-y-4 mt-4">
-                <Link to="/open-packs" className="block z-10 relative">
-                  <Button className="w-full glass-effect" variant="outline">
-                    <Package className="mr-2 h-5 w-5" />
-                    Go to My Profile
-                  </Button>
-                </Link>
-                
-                <Button 
-                  className="w-full glass-effect" 
-                  variant="outline"
-                  onClick={handleCheckStatus}
-                >
-                  <RefreshCw className="mr-2 h-5 w-5" />
-                  Check Holder Status
-                </Button>
-              </div>
-            )}
           </GlassCard>
         </motion.div>
 
