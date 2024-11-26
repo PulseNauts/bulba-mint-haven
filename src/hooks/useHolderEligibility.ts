@@ -18,7 +18,7 @@ export const useHolderEligibility = (): HolderEligibility => {
   const { address, isConnected } = useAccount();
   const { toast } = useToast();
 
-  console.log('[Eligibility Check] Starting eligibility check for address:', address);
+  console.log('🔍 [Eligibility Check] Starting eligibility check for address:', address);
 
   // Check whale status independently
   const { data: isWhale, isLoading: isLoadingWhale } = useReadContract({
@@ -32,12 +32,6 @@ export const useHolderEligibility = (): HolderEligibility => {
       onSuccess: (data) => {
         console.log('🐋 [Whale Check] Raw contract response:', data);
         console.log(`🐋 [Whale Check] Address ${address} Whale status:`, Boolean(data));
-        if (data === true) {
-          toast({
-            title: "Whale Benefits Active",
-            description: "You have access to whale-tier benefits including free and discounted packs!",
-          });
-        }
       },
       onError: (error) => {
         console.error('❌ [Whale Check] Error checking whale status:', error);
@@ -57,12 +51,6 @@ export const useHolderEligibility = (): HolderEligibility => {
       onSuccess: (data) => {
         console.log('🦈 [Holder Check] Raw contract response:', data);
         console.log(`🦈 [Holder Check] Address ${address} Shark status:`, Boolean(data));
-        if (data === true && isWhale !== true) {
-          toast({
-            title: "Shark Benefits Active",
-            description: "You have access to discounted packs!",
-          });
-        }
       },
       onError: (error) => {
         console.error('❌ [Holder Check] Error checking holder status:', error);
