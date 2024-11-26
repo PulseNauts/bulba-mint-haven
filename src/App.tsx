@@ -21,27 +21,35 @@ const connectors = connectorsForWallets([
   {
     groupName: 'Recommended',
     wallets: [
-      injectedWallet,
-      metaMaskWallet,
-      walletConnectWallet,
+      injectedWallet({ projectId }),
+      metaMaskWallet({ projectId }),
+      walletConnectWallet({ projectId }),
     ],
   },
-], { projectId, appName: 'Bulbasaur Card Minting' });
+], { projectId, appName: 'Bulbasaur Card Minting', includeWalletIds: ['injected', 'metaMask'] });
 
 const config = createConfig({
   chains: [pulsechain],
   connectors,
   transports: {
-    [pulsechain.id]: http()
-  }
+    [pulsechain.id]: http(),
+  },
+  syncConnectedChain: true,
 });
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <WagmiProvider config={config}>
     <QueryClientProvider client={queryClient}>
-      <RainbowKitProvider modalSize="compact">
+      <RainbowKitProvider modalSize="compact" coolMode>
         <TooltipProvider>
           <Toaster />
           <Sonner />
