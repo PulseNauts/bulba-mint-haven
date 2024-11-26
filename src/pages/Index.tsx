@@ -12,6 +12,7 @@ import { CollectionStats } from "@/components/CollectionStats";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { pulsechain } from 'viem/chains';
+import { useInView } from 'react-intersection-observer';
 
 const Index = () => {
   const { toast } = useToast();
@@ -20,6 +21,10 @@ const Index = () => {
   const { tier, freePacks, discountedPacks, maxMintAmount, checkEligibility } = useHolderEligibility();
   const { writeContractAsync } = useWriteContract();
   const { mintAmount, setMintAmount, isMinting } = useMinting(tier, freePacks, discountedPacks);
+  const { ref: imageRef, inView } = useInView({
+    threshold: 0.1,
+    triggerOnce: false,
+  });
 
   const handleMint = async (price: bigint) => {
     if (!address) return;
@@ -108,12 +113,25 @@ const Index = () => {
           </motion.div>
 
           <motion.div
+            ref={imageRef}
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.4 }}
             className="relative"
           >
-            <div className="aspect-square relative pack-glow animate-float group">
+            <motion.div
+              className="aspect-square relative pack-glow group"
+              animate={inView ? {
+                scale: [1, 1.02, 1],
+                rotate: [0, 3, 0]
+              } : {}}
+              transition={{
+                duration: 2,
+                ease: "easeInOut",
+                repeat: Infinity,
+                repeatType: "reverse"
+              }}
+            >
               <motion.img
                 src="/lovable-uploads/d088a9e7-5cd7-41fe-b056-00dbec2fd5be.png"
                 alt="Pokechain Pack"
@@ -122,7 +140,7 @@ const Index = () => {
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               />
               <div className="absolute inset-0 bg-gradient-radial from-custom-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            </div>
+            </motion.div>
           </motion.div>
         </div>
       </AnimatePresence>
