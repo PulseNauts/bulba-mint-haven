@@ -1,3 +1,23 @@
+import { Button } from "@/components/ui/button";
+import { Loader2, Crown, BadgeCheck, BadgeDollarSign, Gift, Percent, Fish } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { HolderTier } from "@/hooks/useHolderEligibility";
+import { Badge } from "@/components/ui/badge";
+import { CONTRACT_CONFIG } from "@/config/contract";
+
+interface MintControlsProps {
+  mintAmount: number;
+  setMintAmount: (amount: number) => void;
+  isConnected: boolean;
+  isMinting: boolean;
+  onMint: () => void;
+  onConnect: () => void;
+  maxMintAmount: number;
+  tier: HolderTier;
+  freePacks: number;
+  discountedPacks: number;
+}
+
 export const MintControls = ({
   mintAmount,
   setMintAmount,
