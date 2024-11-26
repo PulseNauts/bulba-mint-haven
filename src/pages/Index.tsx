@@ -111,7 +111,7 @@ const Index = () => {
               <motion.img
                 src="/lovable-uploads/d088a9e7-5cd7-41fe-b056-00dbec2fd5be.png"
                 alt="Pokechain Pack"
-                className="w-full h-full object-contain rounded-2xl transform transition-all duration-500 group-hover:scale-105 group-hover:rotate-3"
+                className="w-full h-full object-contain rounded-2xl transform transition-all duration-500 group-hover:scale-105 group-hover:rotate-3 card-hover"
                 whileHover={{ scale: 1.05, rotate: 3 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               />

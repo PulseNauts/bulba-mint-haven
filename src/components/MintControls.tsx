@@ -131,13 +131,22 @@ export const MintControls = ({
       />
 
       {!isConnected && (
-        <ConnectButton.Custom>
-          {({ openConnectModal }) => (
-            <Button onClick={openConnectModal} className="w-full">
-              Connect Wallet
+        <>
+          <ConnectButton.Custom>
+            {({ openConnectModal }) => (
+              <Button onClick={openConnectModal} className="w-full">
+                Connect Wallet
+              </Button>
+            )}
+          </ConnectButton.Custom>
+
+          <Link to="/open-packs" className="block">
+            <Button className="w-full" variant="outline">
+              <Package className="mr-2 h-4 w-4" />
+              Go to My Profile
             </Button>
-          )}
-        </ConnectButton.Custom>
+          </Link>
+        </>
       )}
 
       {isConnected && (
@@ -156,16 +165,14 @@ export const MintControls = ({
               getMintButtonText()
             )}
           </Button>
-        </>
-      )}
 
-      {isConnected && (
-        <Link to="/open-packs" className="block">
-          <Button className="w-full" variant="outline">
-            <Package className="mr-2 h-4 w-4" />
-            Go to My Profile
-          </Button>
-        </Link>
+          <Link to="/open-packs" className="block">
+            <Button className="w-full" variant="outline">
+              <Package className="mr-2 h-4 w-4" />
+              Go to My Profile
+            </Button>
+          </Link>
+        </>
       )}
     </div>
   );
