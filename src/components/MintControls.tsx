@@ -30,16 +30,12 @@ export const MintControls = ({
   freePacks,
   discountedPacks,
 }: MintControlsProps) => {
-  console.log('MintControls Props:', { tier, freePacks, discountedPacks, mintAmount, isConnected });
-
   const getBenefitsDisplay = () => {
     if (!tier) {
-      console.warn('No tier detected, skipping benefits display.');
       return null;
     }
 
     if (tier === 'whale') {
-      console.log('Rendering Whale Benefits:', { freePacks, discountedPacks });
       return (
         <Alert className="bg-purple-500/10 border-purple-500/20">
           <Crown className="h-5 w-5 text-purple-500" />
@@ -53,7 +49,6 @@ export const MintControls = ({
     }
 
     if (tier === 'holder') {
-      console.log('Rendering Holder Benefits:', { discountedPacks });
       return (
         <Alert className="bg-cyan-500/10 border-cyan-500/20">
           <Fish className="h-5 w-5 text-cyan-500" />
@@ -65,7 +60,6 @@ export const MintControls = ({
       );
     }
 
-    console.log('No benefits to display.');
     return null;
   };
 
@@ -80,10 +74,10 @@ export const MintControls = ({
   };
 
   return (
-    <div>
+    <div className="space-y-4">
       {getBenefitsDisplay()}
 
-      <div className="flex gap-4">
+      <div className="flex gap-4 items-center justify-center">
         <Button
           variant="outline"
           onClick={() => setMintAmount(Math.max(1, mintAmount - 1))}
@@ -91,7 +85,7 @@ export const MintControls = ({
         >
           -
         </Button>
-        <span>{mintAmount}</span>
+        <span className="text-lg font-medium min-w-[2ch] text-center">{mintAmount}</span>
         <Button
           variant="outline"
           onClick={() => setMintAmount(Math.min(maxMintAmount, mintAmount + 1))}
@@ -104,8 +98,16 @@ export const MintControls = ({
       <Button
         onClick={isConnected ? onMint : onConnect}
         disabled={isMinting}
+        className="w-full"
       >
-        {isMinting ? 'Minting...' : getMintButtonText()}
+        {isMinting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Minting...
+          </>
+        ) : (
+          getMintButtonText()
+        )}
       </Button>
     </div>
   );
