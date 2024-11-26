@@ -1,7 +1,8 @@
-import { useAccount, useConnect, useChainId, useSwitchChain, useDisconnect } from "wagmi";
+import { useAccount, useConnect, useChainId, useSwitchChain, useDisconnect, useWriteContract, useWaitForTransactionReceipt } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { useToast } from "@/components/ui/use-toast";
 import { CONTRACT_CONFIG } from "@/config/contract";
+import { CONTRACT_ABI } from "@/config/abi";
 import { Link } from "react-router-dom";
 import { useHolderEligibility } from "@/hooks/useHolderEligibility";
 import { useMinting } from "@/hooks/useMinting";
@@ -12,6 +13,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
 import { LogOut, Package, RefreshCw } from "lucide-react";
+import { pulsechain } from 'viem/chains';
 
 const Index = () => {
   const { toast } = useToast();
@@ -199,3 +201,4 @@ const Index = () => {
 };
 
 export default Index;
+
