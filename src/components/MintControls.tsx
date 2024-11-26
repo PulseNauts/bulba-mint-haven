@@ -6,8 +6,7 @@ import { CONTRACT_CONFIG } from '@/config/contract';
 import { CONTRACT_ABI } from '@/config/abi';
 import { pulsechain } from 'viem/chains';
 import { useToast } from "@/components/ui/use-toast";
-
-export type HolderTier = 'whale' | 'holder' | 'public';
+import { HolderTier } from '@/hooks/useHolderEligibility';
 
 interface MintControlsProps {
   mintAmount: number;
@@ -17,6 +16,9 @@ interface MintControlsProps {
   onMint: () => void;
   onConnect: () => void;
   maxMintAmount: number;
+  tier: HolderTier;
+  freePacks: number;
+  discountedPacks: number;
 }
 
 export const MintControls = ({
@@ -27,6 +29,9 @@ export const MintControls = ({
   onMint,
   onConnect,
   maxMintAmount,
+  tier,
+  freePacks,
+  discountedPacks,
 }: MintControlsProps) => {
   const { address } = useAccount();
   const { toast } = useToast();
@@ -39,7 +44,9 @@ export const MintControls = ({
     functionName: 'isWhaleHolder',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    enabled: isConnected && !!address,
+    query: {
+      enabled: isConnected && !!address,
+    }
   });
 
   const { data: isHolder, isLoading: isLoadingHolder, refetch: refetchHolder } = useReadContract({
@@ -48,7 +55,9 @@ export const MintControls = ({
     functionName: 'isBulbaHolder',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    enabled: isConnected && !!address,
+    query: {
+      enabled: isConnected && !!address,
+    }
   });
 
   const { data: hasClaimedFreePack, refetch: refetchFreePack } = useReadContract({
@@ -57,7 +66,9 @@ export const MintControls = ({
     functionName: 'hasFreePack',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    enabled: isConnected && !!address && Boolean(isWhale),
+    query: {
+      enabled: isConnected && !!address && Boolean(isWhale),
+    }
   });
 
   const { data: discountedPacksMinted, refetch: refetchDiscounted } = useReadContract({
@@ -66,7 +77,9 @@ export const MintControls = ({
     functionName: 'discountedPacksMintedByUser',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    enabled: isConnected && !!address && (Boolean(isWhale) || Boolean(isHolder)),
+    query: {
+      enabled: isConnected && !!address && (Boolean(isWhale) || Boolean(isHolder)),
+    }
   });
 
   let tier: HolderTier = 'public';

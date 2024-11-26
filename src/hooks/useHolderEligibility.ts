@@ -14,7 +14,7 @@ export const useHolderEligibility = () => {
   const { data: whaleStatus } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: 'isWhale',
+    functionName: 'isWhaleHolder',
     query: {
       enabled: true,
     }
@@ -23,7 +23,7 @@ export const useHolderEligibility = () => {
   const { data: holderStatus } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: 'isHolder',
+    functionName: 'isBulbaHolder',
     query: {
       enabled: true,
     }
@@ -32,7 +32,7 @@ export const useHolderEligibility = () => {
   const { data: freePacksData } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: 'getFreePacks',
+    functionName: 'getFreeMintCount',
     query: {
       enabled: true,
     }
@@ -41,7 +41,7 @@ export const useHolderEligibility = () => {
   const { data: discountedPacksData } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: 'getDiscountedPacks',
+    functionName: 'getDiscountedMintCount',
     query: {
       enabled: true,
     }
