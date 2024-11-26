@@ -1,12 +1,13 @@
 import { Button } from "@/components/ui/button";
-import { Loader2, Crown, Fish } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
 import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACT_CONFIG } from '@/config/contract';
 import { CONTRACT_ABI } from '@/config/abi';
 import { pulsechain } from 'viem/chains';
 import { useToast } from "@/components/ui/use-toast";
 import { HolderTier } from '@/hooks/useHolderEligibility';
+import { BenefitsDisplay } from "./mint/BenefitsDisplay";
+import { MintAmountControls } from "./mint/MintAmountControls";
 
 interface MintControlsProps {
   mintAmount: number;
@@ -108,43 +109,6 @@ export const MintControls = ({
 
   console.log('Rendering MintControls with:', { currentTier, currentFreePacks, currentDiscountedPacks, mintAmount });
 
-  const getBenefitsDisplay = () => {
-    if (!currentTier) {
-      console.log('No tier detected, skipping benefits display');
-      return null;
-    }
-
-    if (currentTier === 'whale') {
-      console.log('Displaying whale benefits:', { currentFreePacks, currentDiscountedPacks });
-      return (
-        <Alert className="bg-purple-500/10 border-purple-500/20">
-          <Crown className="h-5 w-5 text-purple-500" />
-          <AlertDescription>
-            <strong>Whale Benefits Active:</strong>
-            <p>Free Packs: {currentFreePacks}</p>
-            <p>Discounted Packs: {currentDiscountedPacks}</p>
-          </AlertDescription>
-        </Alert>
-      );
-    }
-
-    if (currentTier === 'holder') {
-      console.log('Displaying holder benefits:', { currentDiscountedPacks });
-      return (
-        <Alert className="bg-cyan-500/10 border-cyan-500/20">
-          <Fish className="h-5 w-5 text-cyan-500" />
-          <AlertDescription>
-            <strong>Holder Benefits Active:</strong>
-            <p>Discounted Packs: {currentDiscountedPacks}</p>
-          </AlertDescription>
-        </Alert>
-      );
-    }
-
-    console.log('No special benefits to display');
-    return null;
-  };
-
   const getMintButtonText = () => {
     if (!isConnected) return 'Connect Wallet';
 
@@ -159,25 +123,17 @@ export const MintControls = ({
 
   return (
     <div className="space-y-4">
-      {getBenefitsDisplay()}
+      <BenefitsDisplay 
+        tier={currentTier} 
+        freePacks={currentFreePacks} 
+        discountedPacks={currentDiscountedPacks} 
+      />
 
-      <div className="flex gap-4 items-center justify-center">
-        <Button
-          variant="outline"
-          onClick={() => setMintAmount(Math.max(1, mintAmount - 1))}
-          disabled={mintAmount <= 1}
-        >
-          -
-        </Button>
-        <span className="text-lg font-medium min-w-[2ch] text-center">{mintAmount}</span>
-        <Button
-          variant="outline"
-          onClick={() => setMintAmount(Math.min(maxMintAmount, mintAmount + 1))}
-          disabled={mintAmount >= maxMintAmount}
-        >
-          +
-        </Button>
-      </div>
+      <MintAmountControls 
+        mintAmount={mintAmount}
+        setMintAmount={setMintAmount}
+        maxMintAmount={maxMintAmount}
+      />
 
       <Button
         onClick={isConnected ? onMint : onConnect}
@@ -192,19 +148,6 @@ export const MintControls = ({
         ) : (
           getMintButtonText()
         )}
-      </Button>
-
-      <Button
-        onClick={() => {
-          toast({
-            title: "Test Button Clicked",
-            description: "This confirms that Lovable's backend is properly handling code updates.",
-          });
-        }}
-        className="w-full"
-        variant="secondary"
-      >
-        Test Button
       </Button>
 
       {isConnected && (
