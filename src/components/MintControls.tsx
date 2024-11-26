@@ -31,9 +31,6 @@ export const MintControls = ({
   onMint,
   onConnect,
   maxMintAmount,
-  tier: currentTier,
-  freePacks: currentFreePacks,
-  discountedPacks: currentDiscountedPacks,
 }: MintControlsProps) => {
   const { address } = useAccount();
   const { toast } = useToast();
@@ -87,7 +84,7 @@ export const MintControls = ({
     if (!whaleCheckSuccess || !holderCheckSuccess) return 'Checking Status...';
 
     const packText = mintAmount > 1 ? 'Packs' : 'Pack';
-    if (isWhale && mintAmount <= currentFreePacks && !hasClaimedFreePack) {
+    if (isWhale && !hasClaimedFreePack) {
       return `Mint ${mintAmount} FREE ${packText}`;
     }
     return `Mint ${mintAmount} ${packText}`;
