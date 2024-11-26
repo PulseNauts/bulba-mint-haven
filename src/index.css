@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space_Grotesk:wght@300;400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -49,11 +49,11 @@
 }
 
 .glass-card {
-  @apply bg-opacity-20 backdrop-blur-lg bg-white/10 border border-white/20;
+  @apply bg-opacity-20 backdrop-blur-lg bg-white/10 border border-white/20 transition-all duration-300 hover:bg-white/20;
 }
 
 .glass-effect {
-  @apply relative overflow-hidden;
+  @apply relative overflow-hidden transition-all duration-300;
 }
 
 .glass-effect::before {
@@ -66,7 +66,7 @@
 }
 
 .neon-border {
-  @apply relative;
+  @apply relative transition-all duration-300;
 }
 
 .neon-border::after {
@@ -80,11 +80,11 @@
 }
 
 .card-hover {
-  @apply transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-custom-primary/20;
+  @apply transition-all duration-500 hover:scale-105 hover:rotate-2 hover:shadow-xl hover:shadow-custom-primary/20;
 }
 
 .pack-glow {
-  @apply relative;
+  @apply relative transition-all duration-300;
 }
 
 .pack-glow::before {
@@ -93,7 +93,7 @@
 }
 
 .pack-glow:hover::before {
-  @apply opacity-100;
+  @apply opacity-100 scale-110;
 }
 
 /* Button styles */
@@ -103,7 +103,7 @@ button, [type=button], [type=submit] {
 
 /* Card styles */
 .card {
-  @apply glass-card rounded-2xl p-4;
+  @apply glass-card rounded-2xl p-4 transition-transform duration-300 hover:scale-105;
 }
 
 /* Animation classes */
@@ -117,4 +117,19 @@ button, [type=button], [type=submit] {
 
 .animate-pulse {
   animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }

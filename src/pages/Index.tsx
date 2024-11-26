@@ -7,15 +7,18 @@ import { Link } from "react-router-dom";
 import { useHolderEligibility } from "@/hooks/useHolderEligibility";
 import { useMinting } from "@/hooks/useMinting";
 import { MintControls } from "@/components/MintControls";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { CollectionStats } from "@/components/CollectionStats";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { pulsechain } from 'viem/chains';
+import { LoadingAnimation } from "@/components/ui/LoadingAnimation";
+import { useState, useEffect } from "react";
 
 const Index = () => {
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { address, isConnected } = useAccount();
   const { connect } = useConnect();
@@ -109,69 +112,86 @@ const Index = () => {
     }
   };
 
+  useEffect(() => {
+    // Simulate loading time for animation
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (isLoading) {
+    return <LoadingAnimation />;
+  }
+
   return (
     <PageContainer>
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="flex justify-between items-center"
-      >
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-custom-primary to-custom-accent bg-clip-text text-transparent">
-          Bulbasaur Cards
-        </h1>
-        {isConnected && (
-          <Button variant="outline" onClick={handleDisconnect} className="glass-effect z-10">
-            <LogOut className="mr-2 h-4 w-4" />
-            Disconnect
-          </Button>
-        )}
-      </motion.div>
-
-      <div className="grid md:grid-cols-2 gap-8 mt-12">
+      <AnimatePresence>
         <motion.div
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="space-y-6"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex justify-between items-center"
         >
-          <div className="space-y-4">
-            <h2 className="text-3xl font-bold text-custom-light">Mint Your Packs</h2>
-            <p className="text-lg text-custom-light/80">
-              Join the Bulbasaur Cards community on PulseChain. Each pack contains unique cards with varying rarity.
-            </p>
-          </div>
-
-          <CollectionStats />
-
-          <GlassCard className="p-6">
-            <MintControls
-              mintAmount={mintAmount}
-              setMintAmount={setMintAmount}
-              isConnected={isConnected}
-              isMinting={isMinting}
-              onMint={handleMint}
-              onConnect={handleConnect}
-              maxMintAmount={maxMintAmount}
-            />
-          </GlassCard>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-custom-primary to-custom-accent bg-clip-text text-transparent">
+            Bulbasaur Cards
+          </h1>
+          {isConnected && (
+            <Button variant="outline" onClick={handleDisconnect} className="glass-effect z-10">
+              <LogOut className="mr-2 h-4 w-4" />
+              Disconnect
+            </Button>
+          )}
         </motion.div>
 
-        <motion.div
-          initial={{ x: 20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="relative"
-        >
-          <div className="aspect-square relative pack-glow animate-float">
-            <img
-              src="/lovable-uploads/d088a9e7-5cd7-41fe-b056-00dbec2fd5be.png"
-              alt="Pokechain Pack"
-              className="w-full h-full object-contain rounded-2xl card-hover"
-            />
-          </div>
-        </motion.div>
-      </div>
+        <div className="grid md:grid-cols-2 gap-8 mt-12">
+          <motion.div
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="space-y-6"
+          >
+            <div className="space-y-4">
+              <h2 className="text-3xl font-bold text-custom-light">Mint Your Packs</h2>
+              <p className="text-lg text-custom-light/80">
+                Join the Bulbasaur Cards community on PulseChain. Each pack contains unique cards with varying rarity.
+              </p>
+            </div>
+
+            <CollectionStats />
+
+            <GlassCard className="p-6 backdrop-blur-lg border border-white/10 hover:border-white/20 transition-all duration-300">
+              <MintControls
+                mintAmount={mintAmount}
+                setMintAmount={setMintAmount}
+                isConnected={isConnected}
+                isMinting={isMinting}
+                onMint={handleMint}
+                onConnect={handleConnect}
+                maxMintAmount={maxMintAmount}
+              />
+            </GlassCard>
+          </motion.div>
+
+          <motion.div
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="relative"
+          >
+            <div className="aspect-square relative pack-glow animate-float group">
+              <motion.img
+                src="/lovable-uploads/d088a9e7-5cd7-41fe-b056-00dbec2fd5be.png"
+                alt="Pokechain Pack"
+                className="w-full h-full object-contain rounded-2xl transform transition-all duration-500 group-hover:scale-105 group-hover:rotate-3"
+                whileHover={{ scale: 1.05, rotate: 3 }}
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              />
+              <div className="absolute inset-0 bg-gradient-radial from-custom-primary/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
+          </motion.div>
+        </div>
+      </AnimatePresence>
     </PageContainer>
   );
 };
