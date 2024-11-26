@@ -19,6 +19,8 @@ export const useHolderEligibility = (): HolderEligibility => {
   const { address, isConnected } = useAccount();
   const { toast } = useToast();
 
+  console.log(`Checking eligibility for address: ${address}`);
+
   const { data: isWhale, isLoading: isLoadingWhale, refetch: refetchWhale } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
@@ -61,25 +63,46 @@ export const useHolderEligibility = (): HolderEligibility => {
   let maxMintAmount = 10;
 
   if (isWhale) {
+    console.log('Whale status detected');
     tier = 'whale';
     maxFreePacks = hasClaimedFreePack ? 0 : 1;
     maxDiscountedPacks = 5 - (Number(discountedPacksMinted) || 0);
+    console.log(`Whale benefits: ${maxFreePacks} free packs, ${maxDiscountedPacks} discounted packs remaining`);
   } else if (isHolder) {
+    console.log('Holder status detected');
     tier = 'holder';
     maxFreePacks = 0;
     maxDiscountedPacks = 5 - (Number(discountedPacksMinted) || 0);
+    console.log(`Holder benefits: ${maxDiscountedPacks} discounted packs remaining`);
+  } else {
+    console.log('Public tier detected - no special benefits');
   }
 
   const remainingFreePacks = Math.max(0, maxFreePacks);
   const remainingDiscountedPacks = Math.max(0, maxDiscountedPacks);
 
   const checkEligibility = async () => {
-    await Promise.all([
-      refetchWhale(),
-      refetchHolder(),
-      refetchFreePack(),
-      refetchDiscounted()
-    ]);
+    console.log('Refreshing eligibility status...');
+    try {
+      await Promise.all([
+        refetchWhale(),
+        refetchHolder(),
+        refetchFreePack(),
+        refetchDiscounted()
+      ]);
+      console.log('Eligibility status refreshed successfully');
+      toast({
+        title: "Status Updated",
+        description: `Current tier: ${tier.toUpperCase()}`,
+      });
+    } catch (error) {
+      console.error('Error refreshing eligibility:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to refresh eligibility status.",
+      });
+    }
   };
 
   return {

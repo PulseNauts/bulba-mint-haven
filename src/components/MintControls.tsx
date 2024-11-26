@@ -30,12 +30,16 @@ export const MintControls = ({
   freePacks,
   discountedPacks,
 }: MintControlsProps) => {
+  console.log('Rendering MintControls with:', { tier, freePacks, discountedPacks, mintAmount });
+
   const getBenefitsDisplay = () => {
     if (!tier) {
+      console.log('No tier detected, skipping benefits display');
       return null;
     }
 
     if (tier === 'whale') {
+      console.log('Displaying whale benefits:', { freePacks, discountedPacks });
       return (
         <Alert className="bg-purple-500/10 border-purple-500/20">
           <Crown className="h-5 w-5 text-purple-500" />
@@ -49,6 +53,7 @@ export const MintControls = ({
     }
 
     if (tier === 'holder') {
+      console.log('Displaying holder benefits:', { discountedPacks });
       return (
         <Alert className="bg-cyan-500/10 border-cyan-500/20">
           <Fish className="h-5 w-5 text-cyan-500" />
@@ -60,6 +65,7 @@ export const MintControls = ({
       );
     }
 
+    console.log('No special benefits to display');
     return null;
   };
 
@@ -68,8 +74,10 @@ export const MintControls = ({
 
     const packText = mintAmount > 1 ? 'Packs' : 'Pack';
     if (tier === 'whale' && mintAmount <= freePacks) {
+      console.log('Displaying free mint button text');
       return `Mint ${mintAmount} FREE ${packText}`;
     }
+    console.log('Displaying standard mint button text');
     return `Mint ${mintAmount} ${packText}`;
   };
 
