@@ -33,8 +33,8 @@ export const MintControls = ({
 
   console.log(`Checking eligibility for address: ${address}`);
 
-  // Fetch eligibility status from the contract
-  const { data: isWhale, refetch: refetchWhale } = useReadContract({
+  // Fetch eligibility status from contract
+  const { data: isWhale } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "isWhaleHolder",
@@ -43,7 +43,7 @@ export const MintControls = ({
     enabled: isConnected && !!address,
   });
 
-  const { data: isHolder, refetch: refetchHolder } = useReadContract({
+  const { data: isHolder } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "isBulbaHolder",
@@ -52,7 +52,7 @@ export const MintControls = ({
     enabled: isConnected && !!address,
   });
 
-  const { data: hasClaimedFreePack, refetch: refetchFreePack } = useReadContract({
+  const { data: hasClaimedFreePack } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "hasFreePack",
@@ -61,7 +61,7 @@ export const MintControls = ({
     enabled: isConnected && !!address && Boolean(isWhale),
   });
 
-  const { data: discountedPacksMinted, refetch: refetchDiscounted } = useReadContract({
+  const { data: discountedPacksMinted } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "discountedPacksMintedByUser",
