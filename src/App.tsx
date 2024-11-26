@@ -38,7 +38,11 @@ const queryClient = new QueryClient({
 const App = () => (
   <WagmiProvider config={config}>
     <QueryClientProvider client={queryClient}>
-      <RainbowKitProvider chains={config.chains} modalSize="compact" coolMode wallets={wallets}>
+      <RainbowKitProvider 
+        appInfo={{ appName: 'Bulbasaur Card Minting' }}
+        modalSize="compact" 
+        coolMode
+      >
         <TooltipProvider>
           <Toaster />
           <Sonner />
