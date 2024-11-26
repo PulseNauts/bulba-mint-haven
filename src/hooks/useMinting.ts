@@ -4,7 +4,7 @@ import { CONTRACT_CONFIG } from '@/config/contract';
 import { CONTRACT_ABI } from '@/config/abi';
 import { useToast } from "@/components/ui/use-toast";
 import { pulsechain } from 'viem/chains';
-import { HolderTier } from './useHolderEligibility';
+import { HolderTier } from '@/components/MintControls';
 import { useContractData } from './useContractData';
 
 export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks: number) => {

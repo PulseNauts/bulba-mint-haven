@@ -39,7 +39,9 @@ export const MintControls = ({
     functionName: "isWhaleHolder",
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    enabled: isConnected && !!address,
+    query: {
+      enabled: isConnected && !!address,
+    }
   });
 
   const { data: isHolder } = useReadContract({
@@ -48,7 +50,9 @@ export const MintControls = ({
     functionName: "isBulbaHolder",
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    enabled: isConnected && !!address,
+    query: {
+      enabled: isConnected && !!address,
+    }
   });
 
   const { data: hasClaimedFreePack } = useReadContract({
@@ -57,7 +61,9 @@ export const MintControls = ({
     functionName: "hasFreePack",
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    enabled: isConnected && !!address && Boolean(isWhale),
+    query: {
+      enabled: isConnected && !!address && Boolean(isWhale),
+    }
   });
 
   const { data: discountedPacksMinted } = useReadContract({
@@ -66,7 +72,9 @@ export const MintControls = ({
     functionName: "discountedPacksMintedByUser",
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    enabled: isConnected && !!address && (Boolean(isWhale) || Boolean(isHolder)),
+    query: {
+      enabled: isConnected && !!address && (Boolean(isWhale) || Boolean(isHolder)),
+    }
   });
 
   let tier: HolderTier = "public";
