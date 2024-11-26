@@ -15,7 +15,6 @@ const projectId = import.meta.env.VITE_WALLET_CONNECT_ID;
 const { wallets } = getDefaultWallets({
   appName: 'Bulbasaur Card Minting',
   projectId,
-  chains: [pulsechain],
 });
 
 const config = createConfig({
@@ -24,7 +23,7 @@ const config = createConfig({
     [pulsechain.id]: http(),
   },
   syncConnectedChain: true,
-  ssr: true, // Enable SSR support
+  ssr: true,
 });
 
 const queryClient = new QueryClient({
@@ -39,7 +38,7 @@ const queryClient = new QueryClient({
 const App = () => (
   <WagmiProvider config={config}>
     <QueryClientProvider client={queryClient}>
-      <RainbowKitProvider chains={[pulsechain]} modalSize="compact" coolMode>
+      <RainbowKitProvider modalSize="compact" coolMode>
         <TooltipProvider>
           <Toaster />
           <Sonner />
