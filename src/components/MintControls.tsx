@@ -97,11 +97,18 @@ export const MintControls = ({
   const getBenefitsDisplay = () => {
     if (tier === "whale") {
       return (
-        <Alert className="bg-purple-500/10 border-purple-500/20 rounded-lg shadow-sm">
-          <Crown className="h-5 w-5 text-purple-500" />
-          <AlertDescription>
-            <strong className="block mb-1 text-purple-700">Whale Benefits</strong>
-            <span>{freePacks} Free Packs</span> · <span>{discountedPacks} Discounted Packs</span>
+        <Alert className="bg-custom-primary/10 border-custom-primary/20 rounded-lg shadow-sm backdrop-blur-sm">
+          <Crown className="h-5 w-5 text-custom-primary animate-pulse" />
+          <AlertDescription className="flex flex-col gap-1">
+            <strong className="text-custom-primary font-bold">Whale Benefits</strong>
+            <div className="flex gap-2 text-sm text-custom-light/80">
+              <span className="bg-custom-primary/20 px-2 py-0.5 rounded-full">
+                {freePacks} Free {freePacks === 1 ? 'Pack' : 'Packs'}
+              </span>
+              <span className="bg-custom-primary/20 px-2 py-0.5 rounded-full">
+                {discountedPacks} Discounted {discountedPacks === 1 ? 'Pack' : 'Packs'}
+              </span>
+            </div>
           </AlertDescription>
         </Alert>
       );
@@ -109,11 +116,15 @@ export const MintControls = ({
 
     if (tier === "holder") {
       return (
-        <Alert className="bg-cyan-500/10 border-cyan-500/20 rounded-lg shadow-sm">
-          <Fish className="h-5 w-5 text-cyan-500" />
-          <AlertDescription>
-            <strong className="block mb-1 text-cyan-700">Holder Benefits</strong>
-            <span>{discountedPacks} Discounted Packs</span>
+        <Alert className="bg-custom-secondary/10 border-custom-secondary/20 rounded-lg shadow-sm backdrop-blur-sm">
+          <Fish className="h-5 w-5 text-custom-secondary animate-pulse" />
+          <AlertDescription className="flex flex-col gap-1">
+            <strong className="text-custom-secondary font-bold">Holder Benefits</strong>
+            <div className="flex gap-2 text-sm text-custom-light/80">
+              <span className="bg-custom-secondary/20 px-2 py-0.5 rounded-full">
+                {discountedPacks} Discounted {discountedPacks === 1 ? 'Pack' : 'Packs'}
+              </span>
+            </div>
           </AlertDescription>
         </Alert>
       );
