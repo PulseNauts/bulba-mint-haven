@@ -11,8 +11,7 @@ import { CollectionStats } from "@/components/CollectionStats";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
-import { LogOut, Package, Info } from "lucide-react";
-import { useContractData } from "@/hooks/useContractData";
+import { LogOut, Package, RefreshCw } from "lucide-react";
 
 const Index = () => {
   const { toast } = useToast();
@@ -21,9 +20,8 @@ const Index = () => {
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   const { disconnect } = useDisconnect();
-  const { tier, freePacks, discountedPacks, maxMintAmount } = useHolderEligibility();
+  const { tier, freePacks, discountedPacks, maxMintAmount, checkEligibility } = useHolderEligibility();
   const { mintAmount, setMintAmount, mint, isMinting } = useMinting(tier, freePacks, discountedPacks);
-  const { mintPrice } = useContractData();
 
   const handleConnect = async () => {
     try {
@@ -72,6 +70,22 @@ const Index = () => {
     }
   };
 
+  const handleCheckStatus = async () => {
+    try {
+      await checkEligibility();
+      toast({
+        title: "Status Updated",
+        description: "Your holder status has been refreshed.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to check holder status.",
+      });
+    }
+  };
+
   return (
     <PageContainer>
       <motion.div
@@ -108,18 +122,6 @@ const Index = () => {
           <CollectionStats />
 
           <GlassCard className="p-6">
-            <div className="mb-4 p-4 rounded-lg bg-custom-primary/10 border border-custom-primary/20">
-              <div className="flex items-center gap-2 mb-2">
-                <Info className="h-5 w-5 text-custom-primary" />
-                <h3 className="font-semibold text-custom-light">Pack Details</h3>
-              </div>
-              <ul className="space-y-2 text-custom-light/80">
-                <li>• {CONTRACT_CONFIG.cardsPerPack} cards per pack</li>
-                <li>• Mint Price: {Number(mintPrice) / 1e18} PLS</li>
-                <li>• Maximum supply: {CONTRACT_CONFIG.totalPacks} packs</li>
-              </ul>
-            </div>
-
             <MintControls
               mintAmount={mintAmount}
               setMintAmount={setMintAmount}
@@ -134,12 +136,23 @@ const Index = () => {
             />
 
             {isConnected && (
-              <Link to="/open-packs" className="block mt-4 z-10 relative">
-                <Button className="w-full glass-effect" variant="outline">
-                  <Package className="mr-2 h-5 w-5" />
-                  Go to My Profile
+              <div className="space-y-4 mt-4">
+                <Link to="/open-packs" className="block z-10 relative">
+                  <Button className="w-full glass-effect" variant="outline">
+                    <Package className="mr-2 h-5 w-5" />
+                    Go to My Profile
+                  </Button>
+                </Link>
+                
+                <Button 
+                  className="w-full glass-effect" 
+                  variant="outline"
+                  onClick={handleCheckStatus}
+                >
+                  <RefreshCw className="mr-2 h-5 w-5" />
+                  Check Holder Status
                 </Button>
-              </Link>
+              </div>
             )}
           </GlassCard>
         </motion.div>
