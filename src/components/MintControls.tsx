@@ -17,9 +17,6 @@ interface MintControlsProps {
   onMint: () => void;
   onConnect: () => void;
   maxMintAmount: number;
-  tier: HolderTier;
-  freePacks: number;
-  discountedPacks: number;
 }
 
 export const MintControls = ({
@@ -30,12 +27,76 @@ export const MintControls = ({
   onMint,
   onConnect,
   maxMintAmount,
-  tier,
-  freePacks,
-  discountedPacks,
 }: MintControlsProps) => {
-  console.log("MintControls Render:", { tier, freePacks, discountedPacks, mintAmount, isConnected });
+  const { address } = useAccount();
+  const { toast } = useToast();
 
+  console.log(`Checking eligibility for address: ${address}`);
+
+  // Fetch eligibility status from contract
+  const { data: isWhale } = useReadContract({
+    address: CONTRACT_CONFIG.address as `0x${string}`,
+    abi: CONTRACT_ABI,
+    functionName: "isWhaleHolder",
+    args: address ? [address as `0x${string}`] : undefined,
+    chainId: pulsechain.id,
+    enabled: isConnected && !!address,
+  });
+
+  const { data: isHolder } = useReadContract({
+    address: CONTRACT_CONFIG.address as `0x${string}`,
+    abi: CONTRACT_ABI,
+    functionName: "isBulbaHolder",
+    args: address ? [address as `0x${string}`] : undefined,
+    chainId: pulsechain.id,
+    enabled: isConnected && !!address,
+  });
+
+  const { data: hasClaimedFreePack } = useReadContract({
+    address: CONTRACT_CONFIG.address as `0x${string}`,
+    abi: CONTRACT_ABI,
+    functionName: "hasFreePack",
+    args: address ? [address as `0x${string}`] : undefined,
+    chainId: pulsechain.id,
+    enabled: isConnected && !!address && Boolean(isWhale),
+  });
+
+  const { data: discountedPacksMinted } = useReadContract({
+    address: CONTRACT_CONFIG.address as `0x${string}`,
+    abi: CONTRACT_ABI,
+    functionName: "discountedPacksMintedByUser",
+    args: address ? [address as `0x${string}`] : undefined,
+    chainId: pulsechain.id,
+    enabled: isConnected && !!address && (Boolean(isWhale) || Boolean(isHolder)),
+  });
+
+  // Determine tier and benefits
+  let tier: HolderTier = "public";
+  let maxFreePacks = 0;
+  let maxDiscountedPacks = 0;
+
+  if (isWhale) {
+    console.log("Whale status detected");
+    tier = "whale";
+    maxFreePacks = hasClaimedFreePack ? 0 : 1;
+    maxDiscountedPacks = 5 - (Number(discountedPacksMinted) || 0);
+    console.log(`Whale benefits: ${maxFreePacks} free packs, ${maxDiscountedPacks} discounted packs remaining`);
+  } else if (isHolder) {
+    console.log("Holder status detected");
+    tier = "holder";
+    maxFreePacks = 0;
+    maxDiscountedPacks = 5 - (Number(discountedPacksMinted) || 0);
+    console.log(`Holder benefits: ${maxDiscountedPacks} discounted packs remaining`);
+  } else {
+    console.log("Public tier detected - no special benefits");
+  }
+
+  const freePacks = Math.max(0, maxFreePacks);
+  const discountedPacks = Math.max(0, maxDiscountedPacks);
+
+  console.log("Rendering MintControls with:", { tier, freePacks, discountedPacks, mintAmount });
+
+  // Display benefits for whale and holder tiers
   const getBenefitsDisplay = () => {
     if (tier === "whale") {
       return (
