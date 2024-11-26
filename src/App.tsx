@@ -19,21 +19,15 @@ import OpenPacks from "./pages/OpenPacks";
 
 const projectId = import.meta.env.VITE_WALLET_CONNECT_ID;
 
-const { wallets } = getDefaultWallets({
-  appName: 'Bulbasaur Card Minting',
-  projectId,
-  chains: [pulsechain],
-});
-
 const connectors = connectorsForWallets([
   {
     groupName: 'Recommended',
     wallets: [
-      injectedWallet({ chains: [pulsechain] }),
-      rainbowWallet({ projectId, chains: [pulsechain] }),
-      walletConnectWallet({ projectId, chains: [pulsechain] }),
-      metaMaskWallet({ projectId, chains: [pulsechain] }),
-      trustWallet({ projectId, chains: [pulsechain] })
+      injectedWallet,
+      rainbowWallet({ projectId }),
+      walletConnectWallet({ projectId }),
+      metaMaskWallet({ projectId }),
+      trustWallet({ projectId })
     ],
   },
 ]);
