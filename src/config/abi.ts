@@ -147,73 +147,14 @@ export const CONTRACT_ABI = [
         type: "address"
       }
     ],
-    name: "getFreeMintCount",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
+    name: "getHolderMintEligibility",
+    outputs: [
       {
-        internalType: "address",
-        name: "holder",
-        type: "address"
+        internalType: "uint256",
+        name: "maxMintAmount",
+        type: "uint256"
       }
     ],
-    name: "getDiscountedMintCount",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address"
-      }
-    ],
-    name: "discountedPacksMintedByUser",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address"
-      }
-    ],
-    name: "hasFreePack",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "holder",
-        type: "address"
-      }
-    ],
-    name: "isWhaleHolder",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
-    stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "holder",
-        type: "address"
-      }
-    ],
-    name: "isBulbaHolder",
-    outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
     type: "function"
   }

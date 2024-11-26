@@ -7,8 +7,6 @@ import { CONTRACT_ABI } from "@/config/abi";
 import { Card } from "./ui/card";
 import { motion } from "framer-motion";
 import { CardStats } from "./CardStats";
-import { CardModal } from "./CardModal";
-import { useInView } from "react-intersection-observer";
 
 interface OpenedCard {
   id: number;
@@ -22,11 +20,6 @@ export const OpenedCards = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [lastFoundCardId, setLastFoundCardId] = useState(223);
   const [scanTrigger, setScanTrigger] = useState(0);
-  const [selectedCard, setSelectedCard] = useState<OpenedCard | null>(null);
-  const { ref, inView } = useInView({
-    threshold: 0.1,
-    triggerOnce: true,
-  });
 
   const client = createPublicClient({
     chain: pulsechain,
@@ -70,8 +63,19 @@ export const OpenedCards = () => {
     } catch (error) {
       console.error(`Error fetching metadata for token ${tokenId}:`, error);
     }
-    return { id: tokenId };
+    return null;
   };
+
+  const triggerRescan = () => {
+    console.log("Starting rescan...");
+    setCards([]); // Reset cards array
+    setLastFoundCardId(223); // Reset last found card ID
+    setScanTrigger(prev => prev + 1);
+  };
+
+  if (typeof window !== 'undefined') {
+    (window as any).triggerCardRescan = triggerRescan;
+  }
 
   useEffect(() => {
     const scanCards = async () => {
@@ -80,41 +84,23 @@ export const OpenedCards = () => {
       setIsLoading(true);
       console.log(`Starting to check cards from ${lastFoundCardId} to 888...`);
       
-      // Scan in smaller batches for better mobile performance
-      const BATCH_SIZE = 20;
-      for (let tokenId = lastFoundCardId; tokenId <= 888; tokenId += BATCH_SIZE) {
-        const batch = await Promise.all(
-          Array.from({ length: BATCH_SIZE }, (_, i) => {
-            const currentId = tokenId + i;
-            if (currentId <= 888) {
-              return checkCardOwnership(currentId);
-            }
-            return Promise.resolve(false);
-          })
-        );
-
-        const ownedInBatch = batch
-          .map((owns, i) => owns ? tokenId + i : null)
-          .filter((id): id is number => id !== null);
-
-        if (ownedInBatch.length > 0) {
-          const newMetadata = await Promise.all(
-            ownedInBatch.map(id => fetchCardMetadata(id))
-          );
-          setCards(prev => [...prev, ...newMetadata.filter(m => m !== null)]);
+      for (let tokenId = lastFoundCardId; tokenId <= 888; tokenId++) {
+        const ownsCard = await checkCardOwnership(tokenId);
+        if (ownsCard) {
+          const cardMetadata = await fetchCardMetadata(tokenId);
+          if (cardMetadata) {
+            setCards(prevCards => [...prevCards, cardMetadata]);
+            setLastFoundCardId(tokenId + 1);
+          }
         }
-
-        setLastFoundCardId(tokenId + BATCH_SIZE);
       }
 
       setIsLoading(false);
       console.log(`Finished checking cards. Found ${cards.length} cards total.`);
     };
 
-    if (inView) {
-      scanCards();
-    }
-  }, [address, isConnected, scanTrigger, inView]);
+    scanCards();
+  }, [address, isConnected, scanTrigger]);
 
   if (!isConnected) {
     return null;
@@ -124,57 +110,40 @@ export const OpenedCards = () => {
     <div className="space-y-8">
       <CardStats totalCards={cards.length} loadingCards={isLoading} />
       
-      <div className="relative" ref={ref}>
+      <div className="relative">
         <h2 className="text-2xl font-semibold mb-6 text-custom-darkGreen flex items-center gap-2">
           My Collection {isLoading && "(Scanning for cards...)"}
         </h2>
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-          {cards.map((card) => {
-            const isVideo = card.image?.toLowerCase().endsWith('.mp4');
-            
-            return (
-              <motion.div
-                key={card.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-                onClick={() => setSelectedCard(card)}
-              >
-                <Card className="group relative aspect-square overflow-hidden bg-gradient-to-br from-custom-lightGreen to-custom-mediumGreen hover:shadow-xl transition-all duration-300 cursor-pointer">
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
-                  {card.image ? (
-                    isVideo ? (
-                      <video
-                        src={card.image}
-                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                      />
-                    ) : (
-                      <img
-                        src={card.image}
-                        alt={card.name || `Card #${card.id}`}
-                        className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                    )
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="text-custom-darkGreen">Loading...</span>
-                    </div>
-                  )}
-                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <p className="text-white text-sm font-semibold truncate">
-                      {card.name || `Card #${card.id}`}
-                    </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {cards.map((card) => (
+            <motion.div
+              key={card.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card className="group relative aspect-square overflow-hidden bg-gradient-to-br from-custom-lightGreen to-custom-mediumGreen hover:shadow-xl transition-all duration-300">
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                {card.image ? (
+                  <img
+                    src={card.image}
+                    alt={card.name || `Card #${card.id}`}
+                    className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <span className="text-custom-darkGreen">Loading...</span>
                   </div>
-                </Card>
-              </motion.div>
-            );
-          })}
+                )}
+                <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <p className="text-white text-sm font-semibold truncate">
+                    {card.name || `Card #${card.id}`}
+                  </p>
+                </div>
+              </Card>
+            </motion.div>
+          ))}
         </div>
 
         {isLoading && cards.length === 0 && (
@@ -192,13 +161,6 @@ export const OpenedCards = () => {
             </p>
           </div>
         )}
-
-        <CardModal
-          isOpen={!!selectedCard}
-          onClose={() => setSelectedCard(null)}
-          image={selectedCard?.image}
-          name={selectedCard?.name}
-        />
       </div>
     </div>
   );

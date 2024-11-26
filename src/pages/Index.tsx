@@ -3,6 +3,7 @@ import { injected } from "wagmi/connectors";
 import { useToast } from "@/components/ui/use-toast";
 import { CONTRACT_CONFIG } from "@/config/contract";
 import { Link } from "react-router-dom";
+import { useHolderEligibility } from "@/hooks/useHolderEligibility";
 import { useMinting } from "@/hooks/useMinting";
 import { MintControls } from "@/components/MintControls";
 import { motion } from "framer-motion";
@@ -10,7 +11,7 @@ import { CollectionStats } from "@/components/CollectionStats";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
-import { LogOut, Package, RefreshCw } from "lucide-react";
+import { LogOut, Package, Info } from "lucide-react";
 
 const Index = () => {
   const { toast } = useToast();
@@ -19,7 +20,8 @@ const Index = () => {
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   const { disconnect } = useDisconnect();
-  const { mintAmount, setMintAmount, mint, isMinting } = useMinting('public', 0, 0);
+  const { tier, freePacks, discountedPacks, maxMintAmount } = useHolderEligibility();
+  const { mintAmount, setMintAmount, mint, isMinting } = useMinting(tier, freePacks, discountedPacks);
 
   const handleConnect = async () => {
     try {
@@ -104,6 +106,18 @@ const Index = () => {
           <CollectionStats />
 
           <GlassCard className="p-6">
+            <div className="mb-4 p-4 rounded-lg bg-custom-primary/10 border border-custom-primary/20">
+              <div className="flex items-center gap-2 mb-2">
+                <Info className="h-5 w-5 text-custom-primary" />
+                <h3 className="font-semibold text-custom-light">Pack Details</h3>
+              </div>
+              <ul className="space-y-2 text-custom-light/80">
+                <li>• {CONTRACT_CONFIG.cardsPerPack} cards per pack</li>
+                <li>• Mint Price: {Number(CONTRACT_CONFIG.mintPrice) / 1e18} PLS</li>
+                <li>• Maximum supply: {CONTRACT_CONFIG.totalPacks} packs</li>
+              </ul>
+            </div>
+
             <MintControls
               mintAmount={mintAmount}
               setMintAmount={setMintAmount}
@@ -111,8 +125,20 @@ const Index = () => {
               isMinting={isMinting}
               onMint={mint}
               onConnect={handleConnect}
-              maxMintAmount={10}
+              maxMintAmount={maxMintAmount}
+              tier={tier}
+              freePacks={freePacks}
+              discountedPacks={discountedPacks}
             />
+
+            {isConnected && (
+              <Link to="/open-packs" className="block mt-4 z-10 relative">
+                <Button className="w-full glass-effect" variant="outline">
+                  <Package className="mr-2 h-5 w-5" />
+                  Go to My Profile
+                </Button>
+              </Link>
+            )}
           </GlassCard>
         </motion.div>
 

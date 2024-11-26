@@ -1,13 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Loader2, Crown, Fish, Gift, BadgeDollarSign, Percent } from "lucide-react";
+import { Loader2, Crown, BadgeCheck, BadgeDollarSign, Gift, Percent } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAccount, useReadContract } from "wagmi";
-import { CONTRACT_CONFIG } from "@/config/contract";
-import { CONTRACT_ABI } from "@/config/abi";
-import { pulsechain } from "viem/chains";
-import { useToast } from "@/components/ui/use-toast";
-
-export type HolderTier = "whale" | "holder" | "public";
+import { HolderTier } from "@/hooks/useHolderEligibility";
+import { Badge } from "@/components/ui/badge";
 
 interface MintControlsProps {
   mintAmount: number;
@@ -32,123 +27,97 @@ export const MintControls = ({
   maxMintAmount,
   tier,
   freePacks,
-  discountedPacks,
+  discountedPacks
 }: MintControlsProps) => {
-  console.log("MintControls Render:", {
-    tier,
-    freePacks,
-    discountedPacks,
-    mintAmount,
-    isConnected,
-  });
-
   const getBenefitsDisplay = () => {
-    if (tier === "whale") {
+    if (tier === 'whale') {
       return (
         <div className="space-y-4">
-          <Alert className="bg-gradient-to-r from-purple-500 to-purple-700 shadow-lg rounded-lg p-4">
-            <div className="flex items-center">
-              <Crown className="h-6 w-6 text-white animate-bounce" />
-              <AlertDescription className="ml-3 text-white">
-                <strong className="block text-lg font-bold">Whale Benefits</strong>
-                <div className="flex gap-4 mt-2">
-                  <div className="flex items-center gap-2 bg-white/10 p-2 rounded-md">
-                    <Gift className="h-5 w-5 text-green-400" />
-                    <span>{freePacks} Free Pack{freePacks !== 1 ? "s" : ""}</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-white/10 p-2 rounded-md">
-                    <BadgeDollarSign className="h-5 w-5 text-blue-400" />
-                    <span>{discountedPacks} Discounted Pack{discountedPacks !== 1 ? "s" : ""}</span>
-                  </div>
-                </div>
-              </AlertDescription>
-            </div>
+          <Alert className="bg-purple-500/10 border-purple-500/20">
+            <Crown className="h-5 w-5 text-purple-500" />
+            <AlertDescription className="flex items-center gap-2">
+              <span className="font-semibold text-purple-500">Whale Benefits:</span>
+            </AlertDescription>
           </Alert>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-green-500">
+              <Gift className="h-4 w-4" />
+              <span>1 FREE Pack</span>
+              <Badge variant="secondary" className="bg-green-500/10 text-green-500">
+                Value: {CONTRACT_CONFIG.mintPrice / 1e18} PLS
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2 text-blue-500">
+              <BadgeDollarSign className="h-4 w-4" />
+              <span>{discountedPacks} Discounted Packs</span>
+              <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+                50% OFF
+              </Badge>
+            </div>
+          </div>
+        </div>
+      );
+    } else if (tier === 'holder') {
+      return (
+        <div className="space-y-4">
+          <Alert className="bg-blue-500/10 border-blue-500/20">
+            <BadgeCheck className="h-5 w-5 text-blue-500" />
+            <AlertDescription className="flex items-center gap-2">
+              <span className="font-semibold text-blue-500">Holder Benefits:</span>
+            </AlertDescription>
+          </Alert>
+          <div className="flex items-center gap-2 text-blue-500">
+            <Percent className="h-4 w-4" />
+            <span>{discountedPacks} Discounted Packs</span>
+            <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+              50% OFF
+            </Badge>
+          </div>
         </div>
       );
     }
-
-    if (tier === "holder") {
-      return (
-        <div className="space-y-4">
-          <Alert className="bg-gradient-to-r from-cyan-500 to-cyan-700 shadow-lg rounded-lg p-4">
-            <div className="flex items-center">
-              <Fish className="h-6 w-6 text-white animate-bounce" />
-              <AlertDescription className="ml-3 text-white">
-                <strong className="block text-lg font-bold">Holder Benefits</strong>
-                <div className="flex gap-4 mt-2">
-                  <div className="flex items-center gap-2 bg-white/10 p-2 rounded-md">
-                    <Percent className="h-5 w-5 text-cyan-400" />
-                    <span>{discountedPacks} Discounted Pack{discountedPacks !== 1 ? "s" : ""}</span>
-                  </div>
-                </div>
-              </AlertDescription>
-            </div>
-          </Alert>
-        </div>
-      );
-    }
-
     return null;
   };
 
-  const getMintButtonText = () => {
-    if (!isConnected) return "Connect Wallet";
-
-    const packText = mintAmount > 1 ? "Packs" : "Pack";
-    if (tier === "whale" && mintAmount <= freePacks) {
-      return `Mint ${mintAmount} Free ${packText}`;
-    }
-    return `Mint ${mintAmount} ${packText}`;
-  };
-
   return (
-    <div className="space-y-6 max-w-md mx-auto">
-      {getBenefitsDisplay()}
+    <div className="space-y-4">
+      {isConnected && getBenefitsDisplay()}
 
-      <div className="flex items-center justify-center gap-4">
+      <div className="flex gap-4 justify-center">
         <Button
           variant="outline"
           onClick={() => setMintAmount(Math.max(1, mintAmount - 1))}
           disabled={mintAmount <= 1}
-          className="text-lg font-semibold"
+          className="z-10"
         >
           -
         </Button>
-        <span className="text-lg font-semibold">{mintAmount}</span>
+        <span className="flex items-center justify-center w-16 text-lg">
+          {mintAmount}
+        </span>
         <Button
           variant="outline"
           onClick={() => setMintAmount(Math.min(maxMintAmount, mintAmount + 1))}
           disabled={mintAmount >= maxMintAmount}
-          className="text-lg font-semibold"
+          className="z-10"
         >
           +
         </Button>
       </div>
 
       <Button
+        className="w-full z-10"
+        size="lg"
         onClick={isConnected ? onMint : onConnect}
         disabled={isMinting}
-        className="w-full text-lg py-3 rounded-lg bg-gradient-to-r from-green-500 to-green-400 text-white hover:from-green-600 hover:to-green-500 shadow-lg"
       >
         {isMinting ? (
-          <>
-            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            Minting...
-          </>
-        ) : (
-          getMintButtonText()
-        )}
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : null}
+        {!isConnected 
+          ? 'Connect Wallet'
+          : `Mint ${mintAmount} Pack${mintAmount > 1 ? 's' : ''}`}
       </Button>
-
-      {isConnected && (
-        <Button
-          className="w-full text-lg py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-400 text-white hover:from-blue-600 hover:to-blue-500 shadow-lg"
-          variant="outline"
-        >
-          Go to My Profile
-        </Button>
-      )}
     </div>
   );
 };

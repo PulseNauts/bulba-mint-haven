@@ -4,8 +4,7 @@ import { CONTRACT_CONFIG } from '@/config/contract';
 import { CONTRACT_ABI } from '@/config/abi';
 import { useToast } from "@/components/ui/use-toast";
 import { pulsechain } from 'viem/chains';
-import { HolderTier } from '@/components/MintControls';
-import { useContractData } from './useContractData';
+import { HolderTier } from './useHolderEligibility';
 
 export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks: number) => {
   const [mintAmount, setMintAmount] = useState(1);
@@ -13,29 +12,26 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
   const { writeContract, data: hash } = useWriteContract();
   const { isLoading: isWaiting } = useWaitForTransactionReceipt({ hash });
   const { address } = useAccount();
-  const { mintPrice } = useContractData();
 
   const calculateMintPrice = (amount: number) => {
     let totalPrice = BigInt(0);
     let remainingAmount = amount;
 
-    // Handle free packs for whales first (if they have any remaining)
-    if (tier === 'whale' && freePacks > 0 && remainingAmount > 0) {
-      const freePacksToUse = Math.min(freePacks, remainingAmount);
-      remainingAmount -= freePacksToUse;
+    // Handle free packs for whales
+    if (tier === 'whale' && remainingAmount > 0) {
+      remainingAmount -= Math.min(freePacks, remainingAmount);
     }
 
-    // Handle discounted packs for both whales and holders
-    if ((tier === 'whale' || tier === 'holder') && discountedPacks > 0 && remainingAmount > 0) {
-      const discountedPacksToUse = Math.min(discountedPacks, remainingAmount);
-      // Apply 50% discount
-      totalPrice += (mintPrice * BigInt(discountedPacksToUse)) / BigInt(2);
-      remainingAmount -= discountedPacksToUse;
+    // Handle discounted packs for whales and holders
+    if (['whale', 'holder'].includes(tier) && remainingAmount > 0) {
+      const discountedAmount = Math.min(discountedPacks, remainingAmount);
+      totalPrice += BigInt(CONTRACT_CONFIG.discountedPrice) * BigInt(discountedAmount);
+      remainingAmount -= discountedAmount;
     }
 
     // Handle remaining packs at full price
     if (remainingAmount > 0) {
-      totalPrice += mintPrice * BigInt(remainingAmount);
+      totalPrice += BigInt(CONTRACT_CONFIG.mintPrice) * BigInt(remainingAmount);
     }
 
     return totalPrice;
@@ -43,16 +39,16 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
 
   const mint = async () => {
     try {
-      const totalPrice = calculateMintPrice(mintAmount);
+      const mintPrice = calculateMintPrice(mintAmount);
 
       await writeContract({
         address: CONTRACT_CONFIG.address as `0x${string}`,
         abi: CONTRACT_ABI,
         functionName: 'mintPacks',
         args: [BigInt(mintAmount)],
-        value: totalPrice,
+        value: mintPrice,
+        account: address as `0x${string}`,
         chain: pulsechain,
-        account: address as `0x${string}`
       });
       
       toast({
@@ -60,7 +56,6 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
         description: `Successfully minted ${mintAmount} pack${mintAmount > 1 ? 's' : ''}!`,
       });
     } catch (error) {
-      console.error('Minting error:', error);
       toast({
         variant: "destructive",
         title: "Minting Error",
