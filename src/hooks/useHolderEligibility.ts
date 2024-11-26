@@ -18,136 +18,128 @@ export const useHolderEligibility = (): HolderEligibility => {
   const { address, isConnected } = useAccount();
   const { toast } = useToast();
 
-  console.log('🔍 [Eligibility Check] Starting eligibility check for address:', address);
+  console.group('🔍 [Eligibility Check] Initialization');
+  console.log('Connected Address:', address);
+  console.log('Is Connected:', isConnected);
 
-  // Check whale status independently
+  // Check whale status
+  console.log('🐋 [Whale Check] Starting...');
   const { data: isWhale, isLoading: isLoadingWhale } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'isWhaleHolder',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    query: {
-      enabled: isConnected && !!address,
-      retry: false,
-      staleTime: 0,
-      gcTime: 0,
-      onSuccess: (data) => {
-        console.log('🐋 [Whale Check] Raw contract response:', data);
-        console.log(`🐋 [Whale Check] Address ${address} Whale status:`, Boolean(data));
-      },
-      onError: (error) => {
-        console.error('❌ [Whale Check] Error checking whale status:', error);
-      }
-    }
+    enabled: isConnected && !!address,
+    onSuccess: (data) => {
+      console.log('🐋 [Whale Check] Success - Raw Response:', data);
+      console.log(`🐋 [Whale Check] Address ${address} Whale Status:`, Boolean(data));
+    },
+    onError: (error) => {
+      console.error('❌ [Whale Check] Error:', error);
+    },
   });
 
-  // Check holder status independently
+  // Check holder status
+  console.log('🦈 [Holder Check] Starting...');
   const { data: isHolder, isLoading: isLoadingHolder } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'isBulbaHolder',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    query: {
-      enabled: isConnected && !!address,
-      retry: false,
-      staleTime: 0,
-      gcTime: 0,
-      onSuccess: (data) => {
-        console.log('🦈 [Holder Check] Raw contract response:', data);
-        console.log(`🦈 [Holder Check] Address ${address} Shark status:`, Boolean(data));
-      },
-      onError: (error) => {
-        console.error('❌ [Holder Check] Error checking holder status:', error);
-      }
-    }
+    enabled: isConnected && !!address,
+    onSuccess: (data) => {
+      console.log('🦈 [Holder Check] Success - Raw Response:', data);
+      console.log(`🦈 [Holder Check] Address ${address} Holder Status:`, Boolean(data));
+    },
+    onError: (error) => {
+      console.error('❌ [Holder Check] Error:', error);
+    },
   });
 
-  // Check free pack claim status for whales
+  // Check free pack claim status
+  console.log('🎁 [Free Pack Check] Starting...');
   const { data: hasClaimedFreePack } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'hasFreePack',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    query: {
-      enabled: isConnected && !!address && isWhale === true,
-      onSuccess: (data) => {
-        console.log('🎁 [Free Pack Status] Raw contract response:', data);
-        console.log(`🎁 [Free Pack Status] Address ${address} has unclaimed free pack:`, Boolean(data));
-      },
-      onError: (error) => {
-        console.error('❌ [Free Pack Status] Error checking free pack status:', error);
-      }
-    }
+    enabled: isConnected && !!address && Boolean(isWhale),
+    onSuccess: (data) => {
+      console.log('🎁 [Free Pack Check] Success - Raw Response:', data);
+      console.log(`🎁 [Free Pack Check] Address ${address} Free Pack Claimed Status:`, Boolean(data));
+    },
+    onError: (error) => {
+      console.error('❌ [Free Pack Check] Error:', error);
+    },
   });
 
-  // Get discounted packs minted
+  // Check discounted packs minted
+  console.log('💰 [Discounted Packs Check] Starting...');
   const { data: discountedPacksMinted } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'discountedPacksMintedByUser',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
-    query: {
-      enabled: isConnected && !!address,
-      onSuccess: (data) => {
-        console.log('💰 [Discount Status] Raw contract response:', data);
-        console.log(`💰 [Discount Status] Address ${address} discounted packs minted:`, Number(data || 0));
-      },
-      onError: (error) => {
-        console.error('❌ [Discount Status] Error checking discounted packs:', error);
-      }
-    }
+    enabled: isConnected && !!address && (Boolean(isWhale) || Boolean(isHolder)),
+    onSuccess: (data) => {
+      console.log('💰 [Discounted Packs Check] Success - Raw Response:', data);
+      console.log(`💰 [Discounted Packs Check] Address ${address} Discounted Packs Minted:`, Number(data || 0));
+    },
+    onError: (error) => {
+      console.error('❌ [Discounted Packs Check] Error:', error);
+    },
   });
 
-  console.log('📊 [Status Debug] Current values:', {
+  console.groupEnd();
+
+  // Calculate eligibility
+  console.group('📊 [Eligibility Calculation]');
+  console.log('Initial Values:', {
     isWhale: Boolean(isWhale),
     isHolder: Boolean(isHolder),
     hasClaimedFreePack: Boolean(hasClaimedFreePack),
-    discountedPacksMinted: Number(discountedPacksMinted || 0)
+    discountedPacksMinted: Number(discountedPacksMinted || 0),
   });
 
-  // Determine tier and benefits
   let tier: HolderTier = 'public';
   let maxFreePacks = 0;
   let maxDiscountedPacks = 0;
   let maxMintAmount = 10;
 
-  // Important: Check whale status first with strict boolean comparison
-  if (isWhale === true) {
-    console.log('🐋 [Whale Benefits] Activating whale tier benefits');
+  if (isWhale) {
+    console.log('🐋 [Whale Benefits] Whale status confirmed.');
     tier = 'whale';
-    maxFreePacks = hasClaimedFreePack === true ? 0 : 1;
-    maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0);
-    console.log(`🐋 [Benefits] Whale tier active - Free packs: ${maxFreePacks}, Discounted packs: ${maxDiscountedPacks}`);
-  } else if (isHolder === true) {
-    console.log('🦈 [Shark Benefits] Activating shark tier benefits');
+    maxFreePacks = hasClaimedFreePack ? 0 : 1;
+    maxDiscountedPacks = 5 - (Number(discountedPacksMinted) || 0);
+  } else if (isHolder) {
+    console.log('🦈 [Holder Benefits] Holder status confirmed.');
     tier = 'holder';
     maxFreePacks = 0;
-    maxDiscountedPacks = 5 - Number(discountedPacksMinted || 0);
-    console.log(`🦈 [Benefits] Shark tier active - Discounted packs: ${maxDiscountedPacks}`);
+    maxDiscountedPacks = 5 - (Number(discountedPacksMinted) || 0);
   } else {
-    console.log('👤 [Public Benefits] No special benefits active');
+    console.log('👤 [Public Benefits] No special status detected.');
   }
 
-  // Ensure we don't return negative values
-  const remainingDiscountedPacks = Math.max(0, maxDiscountedPacks);
   const remainingFreePacks = Math.max(0, maxFreePacks);
+  const remainingDiscountedPacks = Math.max(0, maxDiscountedPacks);
 
-  console.log('🎯 [Final Status]', {
+  console.log('Final Eligibility:', {
     tier,
     remainingFreePacks,
     remainingDiscountedPacks,
-    maxMintAmount
+    maxMintAmount,
   });
+  console.groupEnd();
 
   return {
     tier,
     freePacks: remainingFreePacks,
     discountedPacks: remainingDiscountedPacks,
     maxMintAmount,
-    isLoading: isLoadingWhale || isLoadingHolder
+    isLoading: isLoadingWhale || isLoadingHolder,
   };
 };
