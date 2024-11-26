@@ -14,11 +14,8 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { pulsechain } from 'viem/chains';
-import { LoadingAnimation } from "@/components/ui/LoadingAnimation";
-import { useState, useEffect } from "react";
 
 const Index = () => {
-  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const { address, isConnected } = useAccount();
   const { connect } = useConnect();
@@ -80,7 +77,6 @@ const Index = () => {
     if (!address) return;
     
     try {
-      // Safe way to log BigInt values
       console.log('Minting with price:', {
         priceInWei: price.toString(),
         mintAmount: mintAmount.toString()
@@ -111,18 +107,6 @@ const Index = () => {
       });
     }
   };
-
-  useEffect(() => {
-    // Simulate loading time for animation
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  if (isLoading) {
-    return <LoadingAnimation />;
-  }
 
   return (
     <PageContainer>
