@@ -33,7 +33,7 @@ export const MintControls = ({
 
   console.log(`Checking eligibility for address: ${address}`);
 
-  const { data: isWhale, isLoading: isLoadingWhale, refetch: refetchWhale } = useReadContract({
+  const { data: isWhale } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "isWhaleHolder",
@@ -42,7 +42,7 @@ export const MintControls = ({
     enabled: isConnected && !!address,
   });
 
-  const { data: isHolder, isLoading: isLoadingHolder, refetch: refetchHolder } = useReadContract({
+  const { data: isHolder } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "isBulbaHolder",
@@ -51,7 +51,7 @@ export const MintControls = ({
     enabled: isConnected && !!address,
   });
 
-  const { data: hasClaimedFreePack, refetch: refetchFreePack } = useReadContract({
+  const { data: hasClaimedFreePack } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "hasFreePack",
@@ -60,7 +60,7 @@ export const MintControls = ({
     enabled: isConnected && !!address && Boolean(isWhale),
   });
 
-  const { data: discountedPacksMinted, refetch: refetchDiscounted } = useReadContract({
+  const { data: discountedPacksMinted } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: "discountedPacksMintedByUser",
@@ -92,81 +92,49 @@ export const MintControls = ({
   const freePacks = Math.max(0, maxFreePacks);
   const discountedPacks = Math.max(0, maxDiscountedPacks);
 
-  const checkEligibility = async () => {
-    console.log("Refreshing eligibility status...");
-    try {
-      await Promise.all([refetchWhale(), refetchHolder(), refetchFreePack(), refetchDiscounted()]);
-      console.log("Eligibility status refreshed successfully");
-      toast({
-        title: "Status Updated",
-        description: `Current tier: ${tier.toUpperCase()}`,
-      });
-    } catch (error) {
-      console.error("Error refreshing eligibility:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to refresh eligibility status.",
-      });
-    }
-  };
-
   console.log("Rendering MintControls with:", { tier, freePacks, discountedPacks, mintAmount });
 
   const getBenefitsDisplay = () => {
-    if (!tier) {
-      console.log("No tier detected, skipping benefits display");
-      return null;
-    }
-
     if (tier === "whale") {
-      console.log("Displaying whale benefits:", { freePacks, discountedPacks });
       return (
-        <Alert className="bg-purple-500/10 border-purple-500/20">
+        <Alert className="bg-purple-500/10 border-purple-500/20 rounded-lg shadow-sm">
           <Crown className="h-5 w-5 text-purple-500" />
           <AlertDescription>
-            <strong>Whale Benefits Active:</strong>
-            <p>Free Packs: {freePacks}</p>
-            <p>Discounted Packs: {discountedPacks}</p>
+            <strong className="block mb-1 text-purple-700">Whale Benefits</strong>
+            <span>{freePacks} Free Packs</span> · <span>{discountedPacks} Discounted Packs</span>
           </AlertDescription>
         </Alert>
       );
     }
 
     if (tier === "holder") {
-      console.log("Displaying holder benefits:", { discountedPacks });
       return (
-        <Alert className="bg-cyan-500/10 border-cyan-500/20">
+        <Alert className="bg-cyan-500/10 border-cyan-500/20 rounded-lg shadow-sm">
           <Fish className="h-5 w-5 text-cyan-500" />
           <AlertDescription>
-            <strong>Holder Benefits Active:</strong>
-            <p>Discounted Packs: {discountedPacks}</p>
+            <strong className="block mb-1 text-cyan-700">Holder Benefits</strong>
+            <span>{discountedPacks} Discounted Packs</span>
           </AlertDescription>
         </Alert>
       );
     }
 
-    console.log("No special benefits to display");
     return null;
   };
 
   const getMintButtonText = () => {
-    if (!isConnected) return "Connect Wallet";
-
     const packText = mintAmount > 1 ? "Packs" : "Pack";
     if (tier === "whale" && mintAmount <= freePacks) {
-      console.log("Displaying free mint button text");
-      return `Mint ${mintAmount} FREE ${packText}`;
+      return `Mint ${mintAmount} Free ${packText}`;
     }
-    console.log("Displaying standard mint button text");
     return `Mint ${mintAmount} ${packText}`;
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 max-w-md mx-auto">
       {getBenefitsDisplay()}
 
-      <div className="flex gap-4 items-center justify-center">
+      <div className="flex items-center justify-center gap-4">
         <Button
           variant="outline"
           onClick={() => setMintAmount(Math.max(1, mintAmount - 1))}
@@ -174,7 +142,7 @@ export const MintControls = ({
         >
           -
         </Button>
-        <span className="text-lg font-medium min-w-[2ch] text-center">{mintAmount}</span>
+        <span className="text-lg font-semibold">{mintAmount}</span>
         <Button
           variant="outline"
           onClick={() => setMintAmount(Math.min(maxMintAmount, mintAmount + 1))}
@@ -184,7 +152,11 @@ export const MintControls = ({
         </Button>
       </div>
 
-      <Button onClick={isConnected ? onMint : onConnect} disabled={isMinting} className="w-full">
+      <Button
+        onClick={isConnected ? onMint : onConnect}
+        disabled={isMinting}
+        className="w-full"
+      >
         {isMinting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -199,12 +171,6 @@ export const MintControls = ({
         <div className="space-y-4">
           <Button className="w-full" variant="outline">
             Go to My Profile
-          </Button>
-          <Button className="w-full" variant="outline" onClick={checkEligibility}>
-            Check Holder Status
-          </Button>
-          <Button className="w-full" variant="outline">
-            Placeholder Button
           </Button>
         </div>
       )}
