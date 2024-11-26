@@ -131,15 +131,13 @@ export const MintControls = ({
       />
 
       {!isConnected && (
-        <div className="glass-effect p-2 rounded-lg">
-          <ConnectButton.Custom>
-            {({ openConnectModal }) => (
-              <Button onClick={openConnectModal} className="w-full">
-                Connect Wallet
-              </Button>
-            )}
-          </ConnectButton.Custom>
-        </div>
+        <ConnectButton.Custom>
+          {({ openConnectModal }) => (
+            <Button onClick={openConnectModal} className="w-full">
+              Connect Wallet
+            </Button>
+          )}
+        </ConnectButton.Custom>
       )}
 
       {isConnected && (
@@ -158,14 +156,16 @@ export const MintControls = ({
               getMintButtonText()
             )}
           </Button>
-
-          <Link to="/open-packs" className="block">
-            <Button className="w-full" variant="outline">
-              <Package className="mr-2 h-4 w-4" />
-              Go to My Profile
-            </Button>
-          </Link>
         </>
+      )}
+
+      {isConnected && (
+        <Link to="/open-packs" className="block">
+          <Button className="w-full" variant="outline">
+            <Package className="mr-2 h-4 w-4" />
+            Go to My Profile
+          </Button>
+        </Link>
       )}
     </div>
   );
