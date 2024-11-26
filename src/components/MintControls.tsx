@@ -29,9 +29,9 @@ export const MintControls = ({
   onMint,
   onConnect,
   maxMintAmount,
-  tier,
-  freePacks,
-  discountedPacks,
+  tier: currentTier,
+  freePacks: currentFreePacks,
+  discountedPacks: currentDiscountedPacks,
 }: MintControlsProps) => {
   const { address } = useAccount();
   const { toast } = useToast();
@@ -82,29 +82,6 @@ export const MintControls = ({
     }
   });
 
-  let tier: HolderTier = 'public';
-  let maxFreePacks = 0;
-  let maxDiscountedPacks = 0;
-
-  if (isWhale) {
-    console.log('Whale status detected');
-    tier = 'whale';
-    maxFreePacks = hasClaimedFreePack ? 0 : 1;
-    maxDiscountedPacks = 5 - (Number(discountedPacksMinted) || 0);
-    console.log(`Whale benefits: ${maxFreePacks} free packs, ${maxDiscountedPacks} discounted packs remaining`);
-  } else if (isHolder) {
-    console.log('Holder status detected');
-    tier = 'holder';
-    maxFreePacks = 0;
-    maxDiscountedPacks = 5 - (Number(discountedPacksMinted) || 0);
-    console.log(`Holder benefits: ${maxDiscountedPacks} discounted packs remaining`);
-  } else {
-    console.log('Public tier detected - no special benefits');
-  }
-
-  const freePacks = Math.max(0, maxFreePacks);
-  const discountedPacks = Math.max(0, maxDiscountedPacks);
-
   const checkEligibility = async () => {
     console.log('Refreshing eligibility status...');
     try {
@@ -117,7 +94,7 @@ export const MintControls = ({
       console.log('Eligibility status refreshed successfully');
       toast({
         title: "Status Updated",
-        description: `Current tier: ${tier.toUpperCase()}`,
+        description: `Current tier: ${currentTier.toUpperCase()}`,
       });
     } catch (error) {
       console.error('Error refreshing eligibility:', error);
@@ -129,36 +106,36 @@ export const MintControls = ({
     }
   };
 
-  console.log('Rendering MintControls with:', { tier, freePacks, discountedPacks, mintAmount });
+  console.log('Rendering MintControls with:', { currentTier, currentFreePacks, currentDiscountedPacks, mintAmount });
 
   const getBenefitsDisplay = () => {
-    if (!tier) {
+    if (!currentTier) {
       console.log('No tier detected, skipping benefits display');
       return null;
     }
 
-    if (tier === 'whale') {
-      console.log('Displaying whale benefits:', { freePacks, discountedPacks });
+    if (currentTier === 'whale') {
+      console.log('Displaying whale benefits:', { currentFreePacks, currentDiscountedPacks });
       return (
         <Alert className="bg-purple-500/10 border-purple-500/20">
           <Crown className="h-5 w-5 text-purple-500" />
           <AlertDescription>
             <strong>Whale Benefits Active:</strong>
-            <p>Free Packs: {freePacks}</p>
-            <p>Discounted Packs: {discountedPacks}</p>
+            <p>Free Packs: {currentFreePacks}</p>
+            <p>Discounted Packs: {currentDiscountedPacks}</p>
           </AlertDescription>
         </Alert>
       );
     }
 
-    if (tier === 'holder') {
-      console.log('Displaying holder benefits:', { discountedPacks });
+    if (currentTier === 'holder') {
+      console.log('Displaying holder benefits:', { currentDiscountedPacks });
       return (
         <Alert className="bg-cyan-500/10 border-cyan-500/20">
           <Fish className="h-5 w-5 text-cyan-500" />
           <AlertDescription>
             <strong>Holder Benefits Active:</strong>
-            <p>Discounted Packs: {discountedPacks}</p>
+            <p>Discounted Packs: {currentDiscountedPacks}</p>
           </AlertDescription>
         </Alert>
       );
@@ -172,7 +149,7 @@ export const MintControls = ({
     if (!isConnected) return 'Connect Wallet';
 
     const packText = mintAmount > 1 ? 'Packs' : 'Pack';
-    if (tier === 'whale' && mintAmount <= freePacks) {
+    if (currentTier === 'whale' && mintAmount <= currentFreePacks) {
       console.log('Displaying free mint button text');
       return `Mint ${mintAmount} FREE ${packText}`;
     }
