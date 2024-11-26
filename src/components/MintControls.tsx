@@ -38,7 +38,7 @@ export const MintControls = ({
   const { address } = useAccount();
   const { toast } = useToast();
 
-  const { data: isWhale } = useReadContract({
+  const { data: isWhale, isSuccess: whaleCheckSuccess } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'isWhaleHolder',
@@ -49,7 +49,7 @@ export const MintControls = ({
     }
   });
 
-  const { data: isHolder } = useReadContract({
+  const { data: isHolder, isSuccess: holderCheckSuccess } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'isBulbaHolder',
@@ -84,9 +84,10 @@ export const MintControls = ({
 
   const getMintButtonText = () => {
     if (!isConnected) return 'Connect Wallet';
+    if (!whaleCheckSuccess || !holderCheckSuccess) return 'Checking Status...';
 
     const packText = mintAmount > 1 ? 'Packs' : 'Pack';
-    if (currentTier === 'whale' && mintAmount <= currentFreePacks) {
+    if (isWhale && mintAmount <= currentFreePacks && !hasClaimedFreePack) {
       return `Mint ${mintAmount} FREE ${packText}`;
     }
     return `Mint ${mintAmount} ${packText}`;
@@ -95,9 +96,9 @@ export const MintControls = ({
   return (
     <div className="space-y-4">
       <BenefitsDisplay 
-        tier={currentTier} 
-        freePacks={currentFreePacks} 
-        discountedPacks={currentDiscountedPacks} 
+        tier={isWhale ? 'whale' : isHolder ? 'holder' : 'none'} 
+        freePacks={!hasClaimedFreePack && isWhale ? 1 : 0} 
+        discountedPacks={5 - Number(discountedPacksMinted || 0)} 
       />
 
       <MintAmountControls 
@@ -108,7 +109,7 @@ export const MintControls = ({
 
       <Button
         onClick={isConnected ? onMint : onConnect}
-        disabled={isMinting}
+        disabled={isMinting || (!whaleCheckSuccess || !holderCheckSuccess)}
         className="w-full"
       >
         {isMinting ? (
