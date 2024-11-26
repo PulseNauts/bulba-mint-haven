@@ -77,8 +77,11 @@ const Index = () => {
     if (!address) return;
     
     try {
-      // Convert BigInt to string for logging
-      console.error('Minting with price:', price.toString());
+      // Safe way to log BigInt values
+      console.log('Minting with price:', {
+        priceInWei: price.toString(),
+        mintAmount: mintAmount.toString()
+      });
       
       await writeContractAsync({
         address: CONTRACT_CONFIG.address as `0x${string}`,
@@ -95,7 +98,9 @@ const Index = () => {
         description: `Successfully minted ${mintAmount} pack${mintAmount > 1 ? 's' : ''}!`,
       });
     } catch (error) {
-      console.error('Minting error:', error);
+      console.error('Minting error:', {
+        error: error instanceof Error ? error.message : String(error)
+      });
       toast({
         variant: "destructive",
         title: "Minting Error",
