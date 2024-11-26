@@ -22,9 +22,20 @@ const OpenPacks = () => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3 }}
+            className="space-y-4"
           >
             <h2 className="text-2xl font-bold mb-4 text-custom-light">Connect Wallet</h2>
-            <p className="text-custom-light/80">Please connect your wallet to view your profile</p>
+            <p className="text-custom-light/80 mb-4">Please connect your wallet to view your profile</p>
+            <Link to="/">
+              <Button 
+                variant="outline" 
+                size="default"
+                className="glass-effect bg-custom-primary/20 hover:bg-custom-primary/30 border-custom-primary/30 text-custom-light flex items-center gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Home
+              </Button>
+            </Link>
           </motion.div>
         </GlassCard>
       </PageContainer>
