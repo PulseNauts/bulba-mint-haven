@@ -23,14 +23,17 @@ const connectors = connectorsForWallets([
   {
     groupName: 'Recommended',
     wallets: [
-      ({ projectId }) => injectedWallet({ projectId }),
-      ({ projectId }) => rainbowWallet({ projectId }),
-      ({ projectId }) => walletConnectWallet({ projectId }),
-      ({ projectId }) => metaMaskWallet({ projectId }),
-      ({ projectId }) => trustWallet({ projectId })
+      ({ projectId }) => injectedWallet(),
+      ({ projectId }) => rainbowWallet(),
+      ({ projectId }) => walletConnectWallet(),
+      ({ projectId }) => metaMaskWallet(),
+      ({ projectId }) => trustWallet()
     ],
   },
-], { projectId });
+], { 
+  projectId,
+  appName: 'Bulbasaur Card Minting'
+});
 
 const config = createConfig({
   chains: [pulsechain],
