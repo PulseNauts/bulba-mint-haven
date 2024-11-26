@@ -3,6 +3,7 @@ import { injected } from "wagmi/connectors";
 import { useToast } from "@/components/ui/use-toast";
 import { CONTRACT_CONFIG } from "@/config/contract";
 import { Link } from "react-router-dom";
+import { useHolderEligibility } from "@/hooks/useHolderEligibility";
 import { useMinting } from "@/hooks/useMinting";
 import { MintControls } from "@/components/MintControls";
 import { motion } from "framer-motion";
@@ -10,7 +11,7 @@ import { CollectionStats } from "@/components/CollectionStats";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/button";
-import { LogOut, Package, Info } from "lucide-react";
+import { LogOut, Package, RefreshCw } from "lucide-react";
 
 const Index = () => {
   const { toast } = useToast();
@@ -19,22 +20,20 @@ const Index = () => {
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   const { disconnect } = useDisconnect();
-
-  // Removed `useHolderEligibility`. The eligibility logic is now handled within `MintControls`.
-
-  const { mintAmount, setMintAmount, mint, isMinting } = useMinting();
+  const { tier, freePacks, discountedPacks, maxMintAmount, checkEligibility } = useHolderEligibility();
+  const { mintAmount, setMintAmount, mint, isMinting } = useMinting(tier, freePacks, discountedPacks);
 
   const handleConnect = async () => {
     try {
       if (chainId !== CONTRACT_CONFIG.chain.id) {
-        await switchChain({
-          chainId: CONTRACT_CONFIG.chain.id,
+        await switchChain({ 
+          chainId: CONTRACT_CONFIG.chain.id
         });
       }
-
+      
       await connect({
         connector: injected(),
-        chainId: CONTRACT_CONFIG.chain.id,
+        chainId: CONTRACT_CONFIG.chain.id
       });
     } catch (error: any) {
       if (error?.code === -32002) {
@@ -67,6 +66,22 @@ const Index = () => {
         variant: "destructive",
         title: "Error",
         description: "Failed to disconnect wallet.",
+      });
+    }
+  };
+
+  const handleCheckStatus = async () => {
+    try {
+      await checkEligibility();
+      toast({
+        title: "Status Updated",
+        description: "Your holder status has been refreshed.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to check holder status.",
       });
     }
   };
@@ -107,18 +122,6 @@ const Index = () => {
           <CollectionStats />
 
           <GlassCard className="p-6">
-            <div className="mb-4 p-4 rounded-lg bg-custom-primary/10 border border-custom-primary/20">
-              <div className="flex items-center gap-2 mb-2">
-                <Info className="h-5 w-5 text-custom-primary" />
-                <h3 className="font-semibold text-custom-light">Pack Details</h3>
-              </div>
-              <ul className="space-y-2 text-custom-light/80">
-                <li>• {CONTRACT_CONFIG.cardsPerPack} cards per pack</li>
-                <li>• Mint Price: {Number(CONTRACT_CONFIG.mintPrice) / 1e18} PLS</li>
-                <li>• Maximum supply: {CONTRACT_CONFIG.totalPacks} packs</li>
-              </ul>
-            </div>
-
             <MintControls
               mintAmount={mintAmount}
               setMintAmount={setMintAmount}
@@ -126,15 +129,30 @@ const Index = () => {
               isMinting={isMinting}
               onMint={mint}
               onConnect={handleConnect}
+              maxMintAmount={maxMintAmount}
+              tier={tier}
+              freePacks={freePacks}
+              discountedPacks={discountedPacks}
             />
 
             {isConnected && (
-              <Link to="/open-packs" className="block mt-4 z-10 relative">
-                <Button className="w-full glass-effect" variant="outline">
-                  <Package className="mr-2 h-5 w-5" />
-                  Go to My Profile
+              <div className="space-y-4 mt-4">
+                <Link to="/open-packs" className="block z-10 relative">
+                  <Button className="w-full glass-effect" variant="outline">
+                    <Package className="mr-2 h-5 w-5" />
+                    Go to My Profile
+                  </Button>
+                </Link>
+                
+                <Button 
+                  className="w-full glass-effect" 
+                  variant="outline"
+                  onClick={handleCheckStatus}
+                >
+                  <RefreshCw className="mr-2 h-5 w-5" />
+                  Check Holder Status
                 </Button>
-              </Link>
+              </div>
             )}
           </GlassCard>
         </motion.div>

@@ -26,8 +26,8 @@ export const useContractData = () => {
   });
 
   return {
-    totalMinted,
-    totalPacks,
-    mintPrice
+    totalMinted: Number(totalMinted || 0),
+    totalPacks: Number(totalPacks || CONTRACT_CONFIG.totalPacks),
+    mintPrice: mintPrice || BigInt(0)
   };
 };

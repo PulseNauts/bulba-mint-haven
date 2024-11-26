@@ -13,44 +13,6 @@ export const CONTRACT_ABI = [
     type: "function"
   },
   {
-  "inputs": [
-    {
-      "internalType": "address",
-      "name": "holder",
-      "type": "address"
-    }
-  ],
-  "name": "isWhaleHolder",
-  "outputs": [
-    {
-      "internalType": "bool",
-      "name": "",
-      "type": "bool"
-    }
-  ],
-  "stateMutability": "view",
-  "type": "function"
-},
-{
-  "inputs": [
-    {
-      "internalType": "address",
-      "name": "holder",
-      "type": "address"
-    }
-  ],
-  "name": "isBulbaHolder",
-  "outputs": [
-    {
-      "internalType": "bool",
-      "name": "",
-      "type": "bool"
-    }
-  ],
-  "stateMutability": "view",
-  "type": "function"
-},
-  {
     inputs: [],
     name: "totalPacksMinted",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
@@ -185,14 +147,73 @@ export const CONTRACT_ABI = [
         type: "address"
       }
     ],
-    name: "getHolderMintEligibility",
-    outputs: [
+    name: "getFreeMintCount",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
       {
-        internalType: "uint256",
-        name: "maxMintAmount",
-        type: "uint256"
+        internalType: "address",
+        name: "holder",
+        type: "address"
       }
     ],
+    name: "getDiscountedMintCount",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address"
+      }
+    ],
+    name: "discountedPacksMintedByUser",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address"
+      }
+    ],
+    name: "hasFreePack",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "holder",
+        type: "address"
+      }
+    ],
+    name: "isWhaleHolder",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "holder",
+        type: "address"
+      }
+    ],
+    name: "isBulbaHolder",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "view",
     type: "function"
   }

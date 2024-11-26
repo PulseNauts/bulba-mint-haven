@@ -1,14 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Loader2, Crown, Fish } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useAccount, useReadContract } from "wagmi";
-import { CONTRACT_CONFIG } from "@/config/contract";
-import { CONTRACT_ABI } from "@/config/abi";
-import { pulsechain } from "viem/chains";
+import { useAccount, useReadContract } from 'wagmi';
+import { CONTRACT_CONFIG } from '@/config/contract';
+import { CONTRACT_ABI } from '@/config/abi';
+import { pulsechain } from 'viem/chains';
 import { useToast } from "@/components/ui/use-toast";
-import { useEffect, useState } from "react";
 
-export type HolderTier = "whale" | "holder" | "public";
+export type HolderTier = 'whale' | 'holder' | 'public';
 
 interface MintControlsProps {
   mintAmount: number;
@@ -32,121 +31,139 @@ export const MintControls = ({
   const { address } = useAccount();
   const { toast } = useToast();
 
-  const [tier, setTier] = useState<HolderTier>("public");
-  const [freePacks, setFreePacks] = useState(0);
-  const [discountedPacks, setDiscountedPacks] = useState(0);
+  console.log(`Checking eligibility for address: ${address}`);
 
-  // Read Contract: Whale Holder
-  const { data: isWhale, isLoading: isLoadingWhale } = useReadContract({
+  const { data: isWhale, isLoading: isLoadingWhale, refetch: refetchWhale } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: "isWhaleHolder",
+    functionName: 'isWhaleHolder',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     enabled: isConnected && !!address,
   });
 
-  // Read Contract: Bulba Holder
-  const { data: isHolder, isLoading: isLoadingHolder } = useReadContract({
+  const { data: isHolder, isLoading: isLoadingHolder, refetch: refetchHolder } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: "isBulbaHolder",
+    functionName: 'isBulbaHolder',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     enabled: isConnected && !!address,
   });
 
-  // Read Contract: Free Pack
-  const { data: hasClaimedFreePack } = useReadContract({
+  const { data: hasClaimedFreePack, refetch: refetchFreePack } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: "hasFreePack",
+    functionName: 'hasFreePack',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     enabled: isConnected && !!address && Boolean(isWhale),
   });
 
-  // Read Contract: Discounted Packs Minted
-  const { data: discountedPacksMinted } = useReadContract({
+  const { data: discountedPacksMinted, refetch: refetchDiscounted } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: "discountedPacksMintedByUser",
+    functionName: 'discountedPacksMintedByUser',
     args: address ? [address as `0x${string}`] : undefined,
     chainId: pulsechain.id,
     enabled: isConnected && !!address && (Boolean(isWhale) || Boolean(isHolder)),
   });
 
-  // Evaluate Tier and Benefits
-  useEffect(() => {
-    if (!isConnected || !address) {
-      console.log("User is not connected.");
-      return;
+  let tier: HolderTier = 'public';
+  let maxFreePacks = 0;
+  let maxDiscountedPacks = 0;
+
+  if (isWhale) {
+    console.log('Whale status detected');
+    tier = 'whale';
+    maxFreePacks = hasClaimedFreePack ? 0 : 1;
+    maxDiscountedPacks = 5 - (Number(discountedPacksMinted) || 0);
+    console.log(`Whale benefits: ${maxFreePacks} free packs, ${maxDiscountedPacks} discounted packs remaining`);
+  } else if (isHolder) {
+    console.log('Holder status detected');
+    tier = 'holder';
+    maxFreePacks = 0;
+    maxDiscountedPacks = 5 - (Number(discountedPacksMinted) || 0);
+    console.log(`Holder benefits: ${maxDiscountedPacks} discounted packs remaining`);
+  } else {
+    console.log('Public tier detected - no special benefits');
+  }
+
+  const freePacks = Math.max(0, maxFreePacks);
+  const discountedPacks = Math.max(0, maxDiscountedPacks);
+
+  const checkEligibility = async () => {
+    console.log('Refreshing eligibility status...');
+    try {
+      await Promise.all([
+        refetchWhale(),
+        refetchHolder(),
+        refetchFreePack(),
+        refetchDiscounted()
+      ]);
+      console.log('Eligibility status refreshed successfully');
+      toast({
+        title: "Status Updated",
+        description: `Current tier: ${tier.toUpperCase()}`,
+      });
+    } catch (error) {
+      console.error('Error refreshing eligibility:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to refresh eligibility status.",
+      });
     }
+  };
 
-    console.log(`Evaluating eligibility for address: ${address}`);
-    console.log("isWhale:", isWhale);
-    console.log("isHolder:", isHolder);
+  console.log('Rendering MintControls with:', { tier, freePacks, discountedPacks, mintAmount });
 
-    if (isWhale) {
-      console.log("Whale status confirmed.");
-      setTier("whale");
-      setFreePacks(hasClaimedFreePack ? 0 : 1);
-      setDiscountedPacks(5 - (Number(discountedPacksMinted) || 0));
-    } else if (isHolder) {
-      console.log("Holder status confirmed.");
-      setTier("holder");
-      setFreePacks(0);
-      setDiscountedPacks(5 - (Number(discountedPacksMinted) || 0));
-    } else {
-      console.log("No special status detected. Public tier.");
-      setTier("public");
-      setFreePacks(0);
-      setDiscountedPacks(0);
-    }
-
-    console.log("Eligibility Results:", {
-      tier,
-      freePacks,
-      discountedPacks,
-    });
-  }, [isWhale, isHolder, hasClaimedFreePack, discountedPacksMinted, address, isConnected]);
-
-  // Display Benefits
   const getBenefitsDisplay = () => {
-    if (tier === "whale") {
+    if (!tier) {
+      console.log('No tier detected, skipping benefits display');
+      return null;
+    }
+
+    if (tier === 'whale') {
+      console.log('Displaying whale benefits:', { freePacks, discountedPacks });
       return (
-        <Alert className="bg-purple-500/10 border-purple-500/20 rounded-lg shadow-sm">
+        <Alert className="bg-purple-500/10 border-purple-500/20">
           <Crown className="h-5 w-5 text-purple-500" />
           <AlertDescription>
             <strong>Whale Benefits Active:</strong>
-            <p>{freePacks} Free Packs</p>
-            <p>{discountedPacks} Discounted Packs</p>
+            <p>Free Packs: {freePacks}</p>
+            <p>Discounted Packs: {discountedPacks}</p>
           </AlertDescription>
         </Alert>
       );
     }
 
-    if (tier === "holder") {
+    if (tier === 'holder') {
+      console.log('Displaying holder benefits:', { discountedPacks });
       return (
-        <Alert className="bg-cyan-500/10 border-cyan-500/20 rounded-lg shadow-sm">
+        <Alert className="bg-cyan-500/10 border-cyan-500/20">
           <Fish className="h-5 w-5 text-cyan-500" />
           <AlertDescription>
             <strong>Holder Benefits Active:</strong>
-            <p>{discountedPacks} Discounted Packs</p>
+            <p>Discounted Packs: {discountedPacks}</p>
           </AlertDescription>
         </Alert>
       );
     }
 
+    console.log('No special benefits to display');
     return null;
   };
 
-  // Mint Button Text
   const getMintButtonText = () => {
-    const packText = mintAmount > 1 ? "Packs" : "Pack";
-    if (tier === "whale" && mintAmount <= freePacks) {
-      return `Mint ${mintAmount} Free ${packText}`;
+    if (!isConnected) return 'Connect Wallet';
+
+    const packText = mintAmount > 1 ? 'Packs' : 'Pack';
+    if (tier === 'whale' && mintAmount <= freePacks) {
+      console.log('Displaying free mint button text');
+      return `Mint ${mintAmount} FREE ${packText}`;
     }
+    console.log('Displaying standard mint button text');
     return `Mint ${mintAmount} ${packText}`;
   };
 
@@ -162,7 +179,7 @@ export const MintControls = ({
         >
           -
         </Button>
-        <span className="text-lg font-medium">{mintAmount}</span>
+        <span className="text-lg font-medium min-w-[2ch] text-center">{mintAmount}</span>
         <Button
           variant="outline"
           onClick={() => setMintAmount(Math.min(maxMintAmount, mintAmount + 1))}
@@ -186,6 +203,20 @@ export const MintControls = ({
           getMintButtonText()
         )}
       </Button>
+
+      {isConnected && (
+        <div className="space-y-4">
+          <Button className="w-full" variant="outline">
+            Go to My Profile
+          </Button>
+          <Button className="w-full" variant="outline" onClick={checkEligibility}>
+            Check Holder Status
+          </Button>
+          <Button className="w-full" variant="outline">
+            Placeholder Button
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

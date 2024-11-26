@@ -1,7 +1,5 @@
 export const CONTRACT_CONFIG = {
   address: import.meta.env.VITE_CONTRACT_ADDRESS as string,
-  mintPrice: "90000000000000000000000", // 90,000 PLS
-  discountedPrice: "45000000000000000000000", // 45,000 PLS (50% off)
   totalPacks: 222,
   cardsPerPack: 3,
   chain: {
