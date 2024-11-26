@@ -25,7 +25,6 @@ export const MintControls = ({
   isConnected,
   isMinting,
   onMint,
-  onConnect,
   maxMintAmount,
 }: MintControlsProps) => {
   const { address } = useAccount();
@@ -108,7 +107,6 @@ export const MintControls = ({
   };
 
   const getMintButtonText = () => {
-    if (!isConnected) return 'Connect Wallet';
     if (!whaleCheckSuccess || !holderCheckSuccess) return 'Checking Status...';
 
     const packText = mintAmount > 1 ? 'Packs' : 'Pack';
@@ -132,27 +130,22 @@ export const MintControls = ({
         maxMintAmount={maxMintAmount}
       />
 
-      <Button
-        onClick={isConnected ? handleMint : onConnect}
-        disabled={isMinting || (!whaleCheckSuccess || !holderCheckSuccess)}
-        className="w-full"
-      >
-        {isMinting ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Minting...
-          </>
-        ) : (
-          getMintButtonText()
-        )}
-      </Button>
-
-      <Link to="/open-packs" className="block">
-        <Button className="w-full" variant="outline">
-          <Package className="mr-2 h-4 w-4" />
-          Go to My Profile
+      {isConnected && (
+        <Button
+          onClick={() => onMint(calculateMintPrice())}
+          disabled={isMinting || (!whaleCheckSuccess || !holderCheckSuccess)}
+          className="w-full"
+        >
+          {isMinting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Minting...
+            </>
+          ) : (
+            getMintButtonText()
+          )}
         </Button>
-      </Link>
+      )}
     </div>
   );
 };
