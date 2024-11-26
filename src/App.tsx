@@ -12,6 +12,10 @@ import OpenPacks from "./pages/OpenPacks";
 
 const projectId = import.meta.env.VITE_WALLET_CONNECT_ID;
 
+if (!projectId) {
+  throw new Error('WalletConnect project ID is required. Please set VITE_WALLET_CONNECT_ID in your .env file');
+}
+
 const config = getDefaultConfig({
   appName: 'Bulbasaur Card Minting',
   projectId,
