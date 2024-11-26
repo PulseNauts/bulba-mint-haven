@@ -15,7 +15,6 @@ const projectId = import.meta.env.VITE_WALLET_CONNECT_ID;
 const { wallets } = getDefaultWallets({
   appName: 'Bulbasaur Card Minting',
   projectId,
-  chains: [pulsechain],
 });
 
 const config = createConfig({
@@ -40,13 +39,9 @@ const App = () => (
   <WagmiProvider config={config}>
     <QueryClientProvider client={queryClient}>
       <RainbowKitProvider 
-        appInfo={{ 
-          appName: 'Bulbasaur Card Minting',
-          learnMoreUrl: 'https://bulbasaurpls.com',
-        }}
+        appInfo={{ appName: 'Bulbasaur Card Minting' }}
         modalSize="compact" 
         coolMode
-        initialChain={pulsechain}
       >
         <TooltipProvider>
           <Toaster />
