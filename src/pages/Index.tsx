@@ -77,6 +77,9 @@ const Index = () => {
     if (!address) return;
     
     try {
+      // Convert BigInt to string for logging
+      console.error('Minting with price:', price.toString());
+      
       await writeContractAsync({
         address: CONTRACT_CONFIG.address as `0x${string}`,
         abi: CONTRACT_ABI,
