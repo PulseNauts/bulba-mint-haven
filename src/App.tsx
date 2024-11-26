@@ -17,10 +17,8 @@ const { wallets } = getDefaultWallets({
   projectId,
 });
 
-const chains = [pulsechain];
-
 const config = createConfig({
-  chains,
+  chains: [pulsechain] as const,
   transports: {
     [pulsechain.id]: http(),
   },
@@ -40,7 +38,7 @@ const queryClient = new QueryClient({
 const App = () => (
   <WagmiProvider config={config}>
     <QueryClientProvider client={queryClient}>
-      <RainbowKitProvider chains={chains} modalSize="compact" coolMode wallets={wallets}>
+      <RainbowKitProvider chains={[pulsechain] as const} modalSize="compact" coolMode>
         <TooltipProvider>
           <Toaster />
           <Sonner />

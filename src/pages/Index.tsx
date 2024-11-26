@@ -1,8 +1,8 @@
-import { useAccount, useConnect, useChainId, useSwitchChain, useDisconnect, useWriteContract } from "wagmi";
-import { injected } from "wagmi/connectors";
+import { useAccount, useWriteContract, useDisconnect } from "wagmi";
 import { useToast } from "@/components/ui/use-toast";
 import { CONTRACT_CONFIG } from "@/config/contract";
 import { CONTRACT_ABI } from "@/config/abi";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { Link } from "react-router-dom";
 import { useHolderEligibility } from "@/hooks/useHolderEligibility";
 import { useMinting } from "@/hooks/useMinting";
@@ -11,67 +11,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { CollectionStats } from "@/components/CollectionStats";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
 import { pulsechain } from 'viem/chains';
 
 const Index = () => {
   const { toast } = useToast();
   const { address, isConnected } = useAccount();
-  const { connect } = useConnect();
-  const chainId = useChainId();
-  const { switchChain } = useSwitchChain();
   const { disconnect } = useDisconnect();
   const { tier, freePacks, discountedPacks, maxMintAmount, checkEligibility } = useHolderEligibility();
   const { writeContractAsync } = useWriteContract();
   const { mintAmount, setMintAmount, isMinting } = useMinting(tier, freePacks, discountedPacks);
-
-  const handleConnect = async () => {
-    try {
-      if (chainId !== CONTRACT_CONFIG.chain.id) {
-        await switchChain({ 
-          chainId: CONTRACT_CONFIG.chain.id
-        });
-      }
-      
-      await connect({
-        connector: injected(),
-        chainId: CONTRACT_CONFIG.chain.id
-      });
-    } catch (error: any) {
-      if (error?.code === -32002) {
-        toast({
-          variant: "destructive",
-          title: "Connection Pending",
-          description: "Please check your wallet for pending connection requests.",
-        });
-      } else if (error?.code === 4001) {
-        return;
-      } else if (error?.message?.includes("no injected wallets")) {
-        toast({
-          variant: "destructive",
-          title: "No Wallet Found",
-          description: "Please install a Web3 wallet like MetaMask to continue.",
-        });
-      }
-    }
-  };
-
-  const handleDisconnect = async () => {
-    try {
-      await disconnect();
-      toast({
-        title: "Disconnected",
-        description: "Your wallet has been disconnected.",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to disconnect wallet.",
-      });
-    }
-  };
 
   const handleMint = async (price: bigint) => {
     if (!address) return;
@@ -120,12 +68,9 @@ const Index = () => {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-custom-primary to-custom-accent bg-clip-text text-transparent">
             Bulbasaur Cards
           </h1>
-          {isConnected && (
-            <Button variant="outline" onClick={handleDisconnect} className="glass-effect z-10">
-              <LogOut className="mr-2 h-4 w-4" />
-              Disconnect
-            </Button>
-          )}
+          <div className="glass-effect z-10">
+            <ConnectButton />
+          </div>
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-8 mt-12">
@@ -151,7 +96,6 @@ const Index = () => {
                 isConnected={isConnected}
                 isMinting={isMinting}
                 onMint={handleMint}
-                onConnect={handleConnect}
                 maxMintAmount={maxMintAmount}
               />
             </GlassCard>
