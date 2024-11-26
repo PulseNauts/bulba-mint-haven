@@ -3,6 +3,7 @@ import { injected } from "wagmi/connectors";
 import { useToast } from "@/components/ui/use-toast";
 import { CONTRACT_CONFIG } from "@/config/contract";
 import { Link } from "react-router-dom";
+import { useMinting } from "@/hooks/useMinting";
 import { MintControls } from "@/components/MintControls";
 import { motion } from "framer-motion";
 import { CollectionStats } from "@/components/CollectionStats";
@@ -19,11 +20,18 @@ const Index = () => {
   const { switchChain } = useSwitchChain();
   const { disconnect } = useDisconnect();
 
+  // Removed `useHolderEligibility`. The eligibility logic is now handled within `MintControls`.
+
+  const { mintAmount, setMintAmount, mint, isMinting } = useMinting();
+
   const handleConnect = async () => {
     try {
       if (chainId !== CONTRACT_CONFIG.chain.id) {
-        await switchChain({ chainId: CONTRACT_CONFIG.chain.id });
+        await switchChain({
+          chainId: CONTRACT_CONFIG.chain.id,
+        });
       }
+
       await connect({
         connector: injected(),
         chainId: CONTRACT_CONFIG.chain.id,
@@ -111,7 +119,14 @@ const Index = () => {
               </ul>
             </div>
 
-            <MintControls />
+            <MintControls
+              mintAmount={mintAmount}
+              setMintAmount={setMintAmount}
+              isConnected={isConnected}
+              isMinting={isMinting}
+              onMint={mint}
+              onConnect={handleConnect}
+            />
 
             {isConnected && (
               <Link to="/open-packs" className="block mt-4 z-10 relative">
