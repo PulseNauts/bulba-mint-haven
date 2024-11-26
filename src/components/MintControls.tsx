@@ -204,6 +204,19 @@ export const MintControls = ({
         )}
       </Button>
 
+      <Button
+        onClick={() => {
+          toast({
+            title: "Test Button Clicked",
+            description: "This confirms that Lovable's backend is properly handling code updates.",
+          });
+        }}
+        className="w-full"
+        variant="secondary"
+      >
+        Test Button
+      </Button>
+
       {isConnected && (
         <div className="space-y-4">
           <Button className="w-full" variant="outline">
