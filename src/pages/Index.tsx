@@ -3,8 +3,6 @@ import { injected } from "wagmi/connectors";
 import { useToast } from "@/components/ui/use-toast";
 import { CONTRACT_CONFIG } from "@/config/contract";
 import { Link } from "react-router-dom";
-import { useHolderEligibility } from "@/hooks/useHolderEligibility";
-import { useMinting } from "@/hooks/useMinting";
 import { MintControls } from "@/components/MintControls";
 import { motion } from "framer-motion";
 import { CollectionStats } from "@/components/CollectionStats";
@@ -20,20 +18,15 @@ const Index = () => {
   const chainId = useChainId();
   const { switchChain } = useSwitchChain();
   const { disconnect } = useDisconnect();
-  const { tier, freePacks, discountedPacks, maxMintAmount } = useHolderEligibility();
-  const { mintAmount, setMintAmount, mint, isMinting } = useMinting(tier, freePacks, discountedPacks);
 
   const handleConnect = async () => {
     try {
       if (chainId !== CONTRACT_CONFIG.chain.id) {
-        await switchChain({ 
-          chainId: CONTRACT_CONFIG.chain.id
-        });
+        await switchChain({ chainId: CONTRACT_CONFIG.chain.id });
       }
-      
       await connect({
         connector: injected(),
-        chainId: CONTRACT_CONFIG.chain.id
+        chainId: CONTRACT_CONFIG.chain.id,
       });
     } catch (error: any) {
       if (error?.code === -32002) {
@@ -118,18 +111,7 @@ const Index = () => {
               </ul>
             </div>
 
-            <MintControls
-              mintAmount={mintAmount}
-              setMintAmount={setMintAmount}
-              isConnected={isConnected}
-              isMinting={isMinting}
-              onMint={mint}
-              onConnect={handleConnect}
-              maxMintAmount={maxMintAmount}
-              tier={tier}
-              freePacks={freePacks}
-              discountedPacks={discountedPacks}
-            />
+            <MintControls />
 
             {isConnected && (
               <Link to="/open-packs" className="block mt-4 z-10 relative">
