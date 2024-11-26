@@ -23,7 +23,7 @@ const connectors = connectorsForWallets([
   {
     groupName: 'Recommended',
     wallets: [
-      injectedWallet(),
+      injectedWallet({ projectId }),
       rainbowWallet({ projectId }),
       walletConnectWallet({ projectId }),
       metaMaskWallet({ projectId }),
