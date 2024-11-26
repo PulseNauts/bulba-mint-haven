@@ -30,7 +30,10 @@ const connectors = connectorsForWallets([
       trustWallet
     ],
   },
-], { projectId });
+], { 
+  projectId,
+  appName: 'Bulbasaur Card Minting'
+});
 
 const config = createConfig({
   chains: [pulsechain],
