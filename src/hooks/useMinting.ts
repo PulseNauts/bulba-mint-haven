@@ -18,12 +18,13 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
     let remainingAmount = amount;
 
     // Handle free packs for whales
-    if (tier === 'whale' && remainingAmount > 0) {
-      remainingAmount -= Math.min(freePacks, remainingAmount);
+    if (tier === 'whale' && freePacks > 0 && remainingAmount > 0) {
+      const freePacksUsed = Math.min(freePacks, remainingAmount);
+      remainingAmount -= freePacksUsed;
     }
 
     // Handle discounted packs for whales and holders
-    if (['whale', 'holder'].includes(tier) && remainingAmount > 0) {
+    if ((tier === 'whale' || tier === 'holder') && discountedPacks > 0 && remainingAmount > 0) {
       const discountedAmount = Math.min(discountedPacks, remainingAmount);
       totalPrice += BigInt(CONTRACT_CONFIG.discountedPrice) * BigInt(discountedAmount);
       remainingAmount -= discountedAmount;
@@ -41,21 +42,29 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
     try {
       const mintPrice = calculateMintPrice(mintAmount);
 
+      console.log('Minting Details:', {
+        mintAmount,
+        freePacks,
+        discountedPacks,
+        mintPrice: mintPrice.toString(),
+      });
+
       await writeContract({
         address: CONTRACT_CONFIG.address as `0x${string}`,
         abi: CONTRACT_ABI,
         functionName: 'mintPacks',
-        args: [BigInt(mintAmount)],
+        args: [mintAmount],
         value: mintPrice,
         account: address as `0x${string}`,
         chain: pulsechain,
       });
-      
+
       toast({
         title: "Success!",
         description: `Successfully minted ${mintAmount} pack${mintAmount > 1 ? 's' : ''}!`,
       });
     } catch (error) {
+      console.error('Minting Error:', error);
       toast({
         variant: "destructive",
         title: "Minting Error",
@@ -68,6 +77,6 @@ export const useMinting = (tier: HolderTier, freePacks: number, discountedPacks:
     mintAmount,
     setMintAmount,
     mint,
-    isMinting: isWaiting
+    isMinting: isWaiting,
   };
 };
