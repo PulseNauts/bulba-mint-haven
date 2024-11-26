@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Package } from "lucide-react";
 import { useAccount, useReadContract } from 'wagmi';
 import { CONTRACT_CONFIG } from '@/config/contract';
 import { CONTRACT_ABI } from '@/config/abi';
@@ -8,6 +8,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { HolderTier } from '@/hooks/useHolderEligibility';
 import { BenefitsDisplay } from "./mint/BenefitsDisplay";
 import { MintAmountControls } from "./mint/MintAmountControls";
+import { Link } from "react-router-dom";
 
 interface MintControlsProps {
   mintAmount: number;
@@ -37,87 +38,57 @@ export const MintControls = ({
   const { address } = useAccount();
   const { toast } = useToast();
 
-  console.log(`Checking eligibility for address: ${address}`);
-
-  const { data: isWhale, isLoading: isLoadingWhale, refetch: refetchWhale } = useReadContract({
+  const { data: isWhale } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'isWhaleHolder',
-    args: address ? [address as `0x${string}`] : undefined,
+    args: [address as `0x${string}`],
     chainId: pulsechain.id,
     query: {
       enabled: isConnected && !!address,
     }
   });
 
-  const { data: isHolder, isLoading: isLoadingHolder, refetch: refetchHolder } = useReadContract({
+  const { data: isHolder } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'isBulbaHolder',
-    args: address ? [address as `0x${string}`] : undefined,
+    args: [address as `0x${string}`],
     chainId: pulsechain.id,
     query: {
       enabled: isConnected && !!address,
     }
   });
 
-  const { data: hasClaimedFreePack, refetch: refetchFreePack } = useReadContract({
+  const { data: hasClaimedFreePack } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'hasFreePack',
-    args: address ? [address as `0x${string}`] : undefined,
+    args: [address as `0x${string}`],
     chainId: pulsechain.id,
     query: {
       enabled: isConnected && !!address && Boolean(isWhale),
     }
   });
 
-  const { data: discountedPacksMinted, refetch: refetchDiscounted } = useReadContract({
+  const { data: discountedPacksMinted } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'discountedPacksMintedByUser',
-    args: address ? [address as `0x${string}`] : undefined,
+    args: [address as `0x${string}`],
     chainId: pulsechain.id,
     query: {
       enabled: isConnected && !!address && (Boolean(isWhale) || Boolean(isHolder)),
     }
   });
 
-  const checkEligibility = async () => {
-    console.log('Refreshing eligibility status...');
-    try {
-      await Promise.all([
-        refetchWhale(),
-        refetchHolder(),
-        refetchFreePack(),
-        refetchDiscounted()
-      ]);
-      console.log('Eligibility status refreshed successfully');
-      toast({
-        title: "Status Updated",
-        description: `Current tier: ${currentTier.toUpperCase()}`,
-      });
-    } catch (error) {
-      console.error('Error refreshing eligibility:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to refresh eligibility status.",
-      });
-    }
-  };
-
-  console.log('Rendering MintControls with:', { currentTier, currentFreePacks, currentDiscountedPacks, mintAmount });
-
   const getMintButtonText = () => {
     if (!isConnected) return 'Connect Wallet';
 
     const packText = mintAmount > 1 ? 'Packs' : 'Pack';
     if (currentTier === 'whale' && mintAmount <= currentFreePacks) {
-      console.log('Displaying free mint button text');
       return `Mint ${mintAmount} FREE ${packText}`;
     }
-    console.log('Displaying standard mint button text');
     return `Mint ${mintAmount} ${packText}`;
   };
 
@@ -151,17 +122,12 @@ export const MintControls = ({
       </Button>
 
       {isConnected && (
-        <div className="space-y-4">
+        <Link to="/open-packs" className="block">
           <Button className="w-full" variant="outline">
+            <Package className="mr-2 h-4 w-4" />
             Go to My Profile
           </Button>
-          <Button className="w-full" variant="outline" onClick={checkEligibility}>
-            Check Holder Status
-          </Button>
-          <Button className="w-full" variant="outline">
-            Placeholder Button
-          </Button>
-        </div>
+        </Link>
       )}
     </div>
   );
