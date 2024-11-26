@@ -6,7 +6,6 @@ import { CONTRACT_ABI } from "@/config/abi";
 import { Link } from "react-router-dom";
 import { useHolderEligibility } from "@/hooks/useHolderEligibility";
 import { useMinting } from "@/hooks/useMinting";
-import { MintControls } from "@/components/MintControls";
 import { motion } from "framer-motion";
 import { CollectionStats } from "@/components/CollectionStats";
 import { PageContainer } from "@/components/ui/PageContainer";
@@ -84,6 +83,7 @@ const Index = () => {
         args: [BigInt(mintAmount)],
         value: price,
         chain: pulsechain,
+        account: address as `0x${string}`
       });
       
       toast({
