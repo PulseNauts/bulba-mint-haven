@@ -75,29 +75,31 @@ export const MintControls = ({
   });
 
   const calculateMintPrice = () => {
-    let freePacks = 0;
-    let discountedPacks = 0;
-    let fullPricePacks = mintAmount;
+    const mintPrice = BigInt(90000) * BigInt(10 ** 18); // 90000 PLS
+    let totalPrice = BigInt(0);
+    let remainingPacks = mintAmount;
 
     // Handle free pack for whales
-    if (isWhale && !hasClaimedFreePack) {
-      freePacks = 1;
-      fullPricePacks -= 1;
+    if (isWhale && !hasClaimedFreePack && remainingPacks > 0) {
+      remainingPacks--;
     }
 
     // Handle discounted packs for whales and holders
-    if ((isWhale || isHolder) && fullPricePacks > 0) {
+    if ((isWhale || isHolder) && remainingPacks > 0) {
       const remainingDiscountedPacks = 5 - Number(discountedPacksMinted || 0);
-      if (remainingDiscountedPacks > 0) {
-        discountedPacks = Math.min(remainingDiscountedPacks, fullPricePacks);
-        fullPricePacks -= discountedPacks;
+      const discountedPacksToUse = Math.min(remainingDiscountedPacks, remainingPacks);
+      
+      if (discountedPacksToUse > 0) {
+        totalPrice += (mintPrice / BigInt(2)) * BigInt(discountedPacksToUse);
+        remainingPacks -= discountedPacksToUse;
       }
     }
 
-    // Calculate total price
-    const mintPrice = BigInt(90000) * BigInt(10 ** 18); // 90000 PLS
-    const totalPrice = BigInt(discountedPacks * Number(mintPrice) / 2) + (BigInt(fullPricePacks) * mintPrice);
-    
+    // Add full price packs
+    if (remainingPacks > 0) {
+      totalPrice += mintPrice * BigInt(remainingPacks);
+    }
+
     return totalPrice;
   };
 
@@ -152,7 +154,7 @@ export const MintControls = ({
       {isConnected && (
         <>
           <Button
-            onClick={() => onMint(calculateMintPrice())}
+            onClick={handleMint}
             disabled={isMinting || (!whaleCheckSuccess || !holderCheckSuccess)}
             className="w-full"
           >
