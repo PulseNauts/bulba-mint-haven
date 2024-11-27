@@ -30,6 +30,13 @@ export const MintControls = ({
   const { address } = useAccount();
   const { toast } = useToast();
 
+  const { data: mintPrice } = useReadContract({
+    address: CONTRACT_CONFIG.address as `0x${string}`,
+    abi: CONTRACT_ABI,
+    functionName: 'mintPrice',
+    chainId: pulsechain.id,
+  });
+
   const { data: isWhale, isSuccess: whaleCheckSuccess } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
@@ -75,7 +82,8 @@ export const MintControls = ({
   });
 
   const calculateMintPrice = () => {
-    const mintPrice = BigInt(90000) * BigInt(10 ** 18); // 90000 PLS
+    if (!mintPrice) return BigInt(0);
+    
     let totalPrice = BigInt(0);
     let remainingPacks = mintAmount;
 
