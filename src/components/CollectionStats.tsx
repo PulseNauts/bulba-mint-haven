@@ -41,13 +41,13 @@ export const CollectionStats = () => {
   const stats = [
     {
       label: "Total Supply",
-      value: totalPacks?.toString() || "0",
+      value: totalPacks?.toString() || "222",
       icon: Database,
       delay: 0,
     },
     {
       label: "Minted",
-      value: `${totalMinted?.toString() || "0"}/${totalPacks?.toString() || "0"}`,
+      value: "222/222", // Hardcoded since all packs are minted
       icon: Package,
       delay: 0.1,
     },
