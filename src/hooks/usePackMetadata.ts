@@ -12,6 +12,19 @@ export interface PackMetadata {
   name?: string;
 }
 
+// Helper function to format URIs
+const formatUri = (uri: string, tokenId: number) => {
+  console.log('Original URI:', uri);
+  // Check if URI contains {id} placeholder
+  if (uri.includes('{id}')) {
+    const formattedId = tokenId.toString(16).padStart(64, '0');
+    const formattedUri = uri.replace('{id}', formattedId);
+    console.log('Formatted URI:', formattedUri);
+    return formattedUri;
+  }
+  return uri;
+};
+
 export const usePackMetadata = () => {
   const [packMetadata, setPackMetadata] = useState<PackMetadata[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,8 +46,17 @@ export const usePackMetadata = () => {
       });
 
       if (uri) {
-        const response = await fetch(uri.toString());
+        const formattedUri = formatUri(uri.toString(), tokenId);
+        console.log(`Attempting to fetch metadata from: ${formattedUri}`);
+        
+        const response = await fetch(formattedUri);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const metadata = await response.json();
+        console.log(`Metadata for token ${tokenId}:`, metadata);
+        
         return {
           id: tokenId,
           image: metadata.image,
