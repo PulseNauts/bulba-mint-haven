@@ -23,20 +23,6 @@ export const usePackData = () => {
     chainId: pulsechain.id,
     query: {
       enabled: Boolean(address && isConnected),
-      staleTime: 5000, // Consider data fresh for 5 seconds
-      gcTime: 30000, // Keep data in garbage collection for 30 seconds
-    }
-  });
-
-  // Get token IDs owned by user
-  const { data: tokenIds, isLoading: isTokenIdsLoading } = useReadContract({
-    address: CONTRACT_CONFIG.address as `0x${string}`,
-    abi: CONTRACT_ABI,
-    functionName: 'getPacksMetadataByOwner',
-    args: [address as `0x${string}`],
-    chainId: pulsechain.id,
-    query: {
-      enabled: Boolean(address && isConnected && balance && balance > 0n),
       staleTime: 5000,
       gcTime: 30000,
     }
@@ -44,19 +30,27 @@ export const usePackData = () => {
 
   useEffect(() => {
     const fetchPackData = async () => {
-      if (!tokenIds || !isConnected) {
+      if (!balance || !isConnected || !address) {
         setPacks([]);
         setIsLoading(false);
         return;
       }
 
       try {
-        const formattedPacks = tokenIds.map(pack => ({
-          id: Number(pack.tokenId),
-          uri: pack.uri
-        }));
+        const balanceNum = Number(balance);
+        const packData: PackData[] = [];
 
-        setPacks(formattedPacks);
+        // Fetch URI for each pack
+        for (let i = 0; i < balanceNum; i++) {
+          const uri = await fetch(`${CONTRACT_CONFIG.baseUri}/pack/${i + 1}`);
+          const metadata = await uri.json();
+          packData.push({
+            id: i + 1,
+            uri: metadata.uri || ''
+          });
+        }
+
+        setPacks(packData);
       } catch (error) {
         console.error('Error formatting pack data:', error);
         setPacks([]);
@@ -66,11 +60,11 @@ export const usePackData = () => {
     };
 
     fetchPackData();
-  }, [tokenIds, isConnected]);
+  }, [balance, isConnected, address]);
 
   return {
     packs,
-    isLoading: isLoading || isBalanceLoading || isTokenIdsLoading,
+    isLoading: isLoading || isBalanceLoading,
     totalPacks: packs.length
   };
 };
