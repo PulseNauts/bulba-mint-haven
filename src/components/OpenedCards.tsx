@@ -18,18 +18,27 @@ interface OpenedCard {
 
 // Helper function to format IPFS URLs
 const formatImageUrl = (imageUrl: string | undefined) => {
-  if (!imageUrl) return undefined;
+  if (!imageUrl) {
+    console.log('No image URL provided');
+    return undefined;
+  }
+  
+  console.log('Original image URL:', imageUrl);
   
   // If it's already an HTTP URL, return as is
   if (imageUrl.startsWith('http')) {
+    console.log('HTTP URL detected, returning as is:', imageUrl);
     return imageUrl;
   }
   
   // Handle IPFS URLs
   if (imageUrl.startsWith('ipfs://')) {
-    return imageUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
+    const formattedUrl = imageUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
+    console.log('IPFS URL formatted:', formattedUrl);
+    return formattedUrl;
   }
   
+  console.log('Unknown URL format, returning as is:', imageUrl);
   return imageUrl;
 };
 
@@ -79,6 +88,8 @@ export const OpenedCards = () => {
         args: [BigInt(tokenId)],
       });
 
+      console.log(`Raw URI from contract for token ${tokenId}:`, uri);
+
       if (uri) {
         const formattedUri = uri.toString().replace(
           '{id}',
@@ -93,12 +104,14 @@ export const OpenedCards = () => {
         }
         
         const metadata = await response.json();
-        console.log(`Metadata for token ${tokenId}:`, metadata);
+        console.log(`Full metadata for token ${tokenId}:`, metadata);
         
-        // Format the image URL before returning
+        const formattedImage = formatImageUrl(metadata.image);
+        console.log(`Formatted image URL for token ${tokenId}:`, formattedImage);
+        
         return {
           id: tokenId,
-          image: formatImageUrl(metadata.image),
+          image: formattedImage,
           name: metadata.name
         };
       }
@@ -142,7 +155,14 @@ export const OpenedCards = () => {
           const newMetadata = await Promise.all(
             ownedInBatch.map(id => fetchCardMetadata(id))
           );
-          setCards(prev => [...prev, ...newMetadata.filter(m => m !== null)]);
+          
+          console.log('New metadata fetched:', newMetadata);
+          
+          setCards(prev => {
+            const updated = [...prev, ...newMetadata.filter(m => m !== null)];
+            console.log('Updated cards array:', updated);
+            return updated;
+          });
         }
 
         setLastFoundCardId(tokenId + BATCH_SIZE);
