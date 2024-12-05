@@ -63,10 +63,22 @@ export const OpenedCards = () => {
       });
 
       if (uri) {
-        console.log(`URI for token ${tokenId}:`, uri.toString());
-        const response = await fetch(uri.toString());
+        // Replace any {id} placeholder with the actual token ID in hexadecimal format
+        const formattedUri = uri.toString().replace(
+          '{id}',
+          tokenId.toString(16).padStart(64, '0')
+        );
+        
+        console.log(`Formatted URI for token ${tokenId}:`, formattedUri);
+        
+        const response = await fetch(formattedUri);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const metadata = await response.json();
         console.log(`Metadata for token ${tokenId}:`, metadata);
+        
         return {
           id: tokenId,
           image: metadata.image,

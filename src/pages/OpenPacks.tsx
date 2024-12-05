@@ -1,19 +1,16 @@
 import { Button } from "@/components/ui/button";
-import { Package, Flame, Database } from "lucide-react";
+import { Package } from "lucide-react";
 import { useAccount } from "wagmi";
-import { Link } from "react-router-dom";
 import { PackAmountTracker } from "@/components/PackAmountTracker";
 import { OpenedCards } from "@/components/OpenedCards";
 import { motion } from "framer-motion";
 import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { useContractData } from "@/hooks/useContractData";
 import { CollectionStats } from "@/components/CollectionStats";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const OpenPacks = () => {
   const { isConnected } = useAccount();
-  const { totalMinted, totalPacks } = useContractData();
 
   if (!isConnected) {
     return (
@@ -54,15 +51,6 @@ const OpenPacks = () => {
           Bulbasaur Profile
         </h1>
       </motion.div>
-
-      <motion.section
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-        className="mt-8"
-      >
-        <CollectionStats />
-      </motion.section>
 
       <motion.section
         initial={{ opacity: 0, y: 20 }}
