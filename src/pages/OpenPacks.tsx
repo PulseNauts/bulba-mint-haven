@@ -45,11 +45,12 @@ const OpenPacks = () => {
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-4"
+        className="flex items-center justify-between gap-4"
       >
         <h1 className="text-3xl font-bold bg-gradient-to-r from-[#9DE182] to-[#65B741] bg-clip-text text-transparent">
           Bulbasaur Profile
         </h1>
+        <ConnectButton />
       </motion.div>
 
       <motion.section
