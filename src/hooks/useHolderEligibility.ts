@@ -15,7 +15,6 @@ export const useHolderEligibility = () => {
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'isWhaleHolder',
-    args: [],
     query: {
       enabled: true,
     }
@@ -25,29 +24,24 @@ export const useHolderEligibility = () => {
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
     functionName: 'isBulbaHolder',
-    args: [],
     query: {
       enabled: true,
     }
   });
 
-  // Instead of reading from contract, we'll use hasFreePack
-  const { data: hasFreePackData } = useReadContract({
+  const { data: freePacksData } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: 'hasFreePack',
-    args: [],
+    functionName: 'getFreeMintCount',
     query: {
       enabled: true,
     }
   });
 
-  // Instead of getDiscountedMintCount, we'll use discountedPacksMintedByUser
   const { data: discountedPacksData } = useReadContract({
     address: CONTRACT_CONFIG.address as `0x${string}`,
     abi: CONTRACT_ABI,
-    functionName: 'discountedPacksMintedByUser',
-    args: [],
+    functionName: 'getDiscountedMintCount',
     query: {
       enabled: true,
     }
@@ -56,13 +50,13 @@ export const useHolderEligibility = () => {
   const checkEligibility = async () => {
     if (whaleStatus) {
       setTier('whale');
-      setFreePacks(hasFreePackData ? 1 : 0);
-      setDiscountedPacks(Number(discountedPacksData || 0n));
+      setFreePacks(Number(freePacksData || 0));
+      setDiscountedPacks(Number(discountedPacksData || 0));
       setMaxMintAmount(20);
     } else if (holderStatus) {
       setTier('holder');
       setFreePacks(0);
-      setDiscountedPacks(Number(discountedPacksData || 0n));
+      setDiscountedPacks(Number(discountedPacksData || 0));
       setMaxMintAmount(15);
     } else {
       setTier('none');

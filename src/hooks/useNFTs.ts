@@ -16,12 +16,12 @@ export const useNFTs = (contractAddress: `0x${string}`) => {
   const [nfts, setNfts] = useState<NFT[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Get balance of token ID 1 (pack token)
-  const { data: balance } = useReadContract({
+  // Get all packs metadata owned by the user
+  const { data: packsMetadata, isSuccess: metadataLoaded } = useReadContract({
     address: contractAddress,
     abi: CONTRACT_ABI,
-    functionName: 'balanceOf',
-    args: [address as `0x${string}`, 1n],
+    functionName: 'getPacksMetadataByOwner',
+    args: [address as `0x${string}`],
     chainId: pulsechain.id,
     query: {
       enabled: Boolean(address && isConnected)
@@ -30,7 +30,7 @@ export const useNFTs = (contractAddress: `0x${string}`) => {
 
   useEffect(() => {
     const fetchNFTMetadata = async () => {
-      if (!address || !isConnected || !balance) {
+      if (!address || !isConnected || !packsMetadata || !metadataLoaded) {
         setNfts([]);
         setIsLoading(false);
         return;
@@ -39,20 +39,11 @@ export const useNFTs = (contractAddress: `0x${string}`) => {
       setIsLoading(true);
 
       try {
-        const ownedNFTs: NFT[] = [];
-        const balanceNum = Number(balance);
-        
-        // Fetch URI for each owned token
-        for (let i = 0; i < balanceNum; i++) {
-          const uri = await fetch(`${CONTRACT_CONFIG.baseUri}/token/${i + 1}`);
-          const metadata = await uri.json();
-          ownedNFTs.push({
-            id: BigInt(i + 1),
-            uri: metadata.uri || '',
-            image: metadata.image,
-            name: metadata.name
-          });
-        }
+        // Map over the packs metadata and fetch additional metadata if available
+        const ownedNFTs: NFT[] = packsMetadata.map(pack => ({
+          id: pack.tokenId,
+          uri: pack.uri
+        }));
 
         setNfts(ownedNFTs);
       } catch (error) {
@@ -64,11 +55,11 @@ export const useNFTs = (contractAddress: `0x${string}`) => {
     };
 
     fetchNFTMetadata();
-  }, [address, isConnected, balance]);
+  }, [address, isConnected, packsMetadata, metadataLoaded]);
 
   return {
     nfts,
-    isLoading,
+    isLoading: isLoading || !metadataLoaded,
     totalNFTs: nfts.length
   };
 };
