@@ -28,6 +28,8 @@ export const OpenedCards = () => {
     triggerOnce: true,
   });
 
+  console.log('OpenedCards Component - Wallet Status:', { address, isConnected });
+
   const client = createPublicClient({
     chain: pulsechain,
     transport: http()
@@ -35,13 +37,14 @@ export const OpenedCards = () => {
 
   const checkCardOwnership = async (tokenId: number) => {
     try {
+      console.log(`Checking ownership for token ${tokenId}...`);
       const balance = await client.readContract({
         address: CONTRACT_CONFIG.address as `0x${string}`,
         abi: CONTRACT_ABI,
         functionName: 'balanceOf',
         args: [address as `0x${string}`, BigInt(tokenId)],
       });
-
+      console.log(`Token ${tokenId} balance:`, balance.toString());
       return balance > 0n;
     } catch (error) {
       console.error(`Error checking ownership for token ${tokenId}:`, error);
@@ -51,6 +54,7 @@ export const OpenedCards = () => {
 
   const fetchCardMetadata = async (tokenId: number) => {
     try {
+      console.log(`Fetching metadata for token ${tokenId}...`);
       const uri = await client.readContract({
         address: CONTRACT_CONFIG.address as `0x${string}`,
         abi: CONTRACT_ABI,
@@ -59,8 +63,10 @@ export const OpenedCards = () => {
       });
 
       if (uri) {
+        console.log(`URI for token ${tokenId}:`, uri.toString());
         const response = await fetch(uri.toString());
         const metadata = await response.json();
+        console.log(`Metadata for token ${tokenId}:`, metadata);
         return {
           id: tokenId,
           image: metadata.image,
@@ -75,7 +81,10 @@ export const OpenedCards = () => {
 
   useEffect(() => {
     const scanCards = async () => {
-      if (!address || !isConnected) return;
+      if (!address || !isConnected) {
+        console.log('No wallet connected, skipping card scan');
+        return;
+      }
       
       setIsLoading(true);
       console.log(`Starting to check cards from ${lastFoundCardId} to 888...`);
@@ -83,6 +92,7 @@ export const OpenedCards = () => {
       // Scan in smaller batches for better mobile performance
       const BATCH_SIZE = 20;
       for (let tokenId = lastFoundCardId; tokenId <= 888; tokenId += BATCH_SIZE) {
+        console.log(`Scanning batch starting at token ${tokenId}...`);
         const batch = await Promise.all(
           Array.from({ length: BATCH_SIZE }, (_, i) => {
             const currentId = tokenId + i;
@@ -96,6 +106,8 @@ export const OpenedCards = () => {
         const ownedInBatch = batch
           .map((owns, i) => owns ? tokenId + i : null)
           .filter((id): id is number => id !== null);
+
+        console.log(`Found ${ownedInBatch.length} owned cards in current batch`);
 
         if (ownedInBatch.length > 0) {
           const newMetadata = await Promise.all(
@@ -112,6 +124,7 @@ export const OpenedCards = () => {
     };
 
     if (inView) {
+      console.log('Component in view, starting card scan...');
       scanCards();
     }
   }, [address, isConnected, scanTrigger, inView]);

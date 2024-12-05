@@ -13,10 +13,10 @@ export const CONTRACT_CONFIG = {
     },
     rpcUrls: {
       default: {
-        http: ["https://rpc-pulsechain.g4mm4.io"]
+        http: ["https://rpc.pulsechain.com"]
       },
       public: {
-        http: ["https://rpc-pulsechain.g4mm4.io"]
+        http: ["https://rpc.pulsechain.com"]
       }
     },
     blockExplorers: {
