@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Package, Flame, Database } from "lucide-react";
+import { Package, Flame, Database } from "lucide-react";
 import { useAccount } from "wagmi";
 import { Link } from "react-router-dom";
 import { PackAmountTracker } from "@/components/PackAmountTracker";
@@ -26,16 +26,6 @@ const OpenPacks = () => {
           >
             <h2 className="text-2xl font-bold mb-4 text-custom-light">Connect Wallet</h2>
             <p className="text-custom-light/80 mb-4">Please connect your wallet to view your profile</p>
-            <Link to="/">
-              <Button 
-                variant="outline" 
-                size="default"
-                className="glass-effect bg-custom-primary/20 hover:bg-custom-primary/30 border-custom-primary/30 text-custom-light flex items-center gap-2"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Home
-              </Button>
-            </Link>
           </motion.div>
         </GlassCard>
       </PageContainer>
@@ -49,16 +39,6 @@ const OpenPacks = () => {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center gap-4"
       >
-        <Link to="/">
-          <Button 
-            variant="outline" 
-            size="default"
-            className="glass-effect bg-custom-primary/20 hover:bg-custom-primary/30 border-custom-primary/30 text-custom-light flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-        </Link>
         <h1 className="text-3xl font-bold bg-gradient-to-r from-[#9DE182] to-[#65B741] bg-clip-text text-transparent">
           Bulbasaur Profile
         </h1>
