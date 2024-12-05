@@ -41,7 +41,7 @@ export const CollectionStats = () => {
   const stats = [
     {
       label: "Total Supply",
-      value: totalPacks?.toString() || "222",
+      value: "222", // Hardcoded since we know the total supply
       icon: Database,
       delay: 0,
     },
