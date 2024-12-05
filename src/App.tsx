@@ -7,7 +7,6 @@ import { createConfig, http, WagmiProvider } from 'wagmi';
 import { pulsechain } from 'viem/chains';
 import { RainbowKitProvider, getDefaultConfig } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
-import Index from "./pages/Index";
 import OpenPacks from "./pages/OpenPacks";
 
 const projectId = import.meta.env.VITE_WALLET_CONNECT_ID;
@@ -52,8 +51,7 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/open-packs" element={<OpenPacks />} />
+              <Route path="/" element={<OpenPacks />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </BrowserRouter>
