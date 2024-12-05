@@ -24,16 +24,7 @@ const OpenPacks = () => {
           >
             <h2 className="text-2xl font-bold mb-4 text-custom-light">Connect Wallet</h2>
             <p className="text-custom-light/80 mb-4">Please connect your wallet to view your profile</p>
-            <ConnectButton.Custom>
-              {({ openConnectModal }) => (
-                <Button 
-                  onClick={openConnectModal} 
-                  className="glass-effect bg-custom-primary/20 hover:bg-custom-primary/30 border-custom-primary/30 text-custom-light"
-                >
-                  Connect Wallet
-                </Button>
-              )}
-            </ConnectButton.Custom>
+            <ConnectButton />
           </motion.div>
         </GlassCard>
       </PageContainer>
@@ -50,7 +41,7 @@ const OpenPacks = () => {
         <h1 className="text-3xl font-bold bg-gradient-to-r from-[#9DE182] to-[#65B741] bg-clip-text text-transparent">
           Bulbasaur Profile
         </h1>
-        <ConnectButton />
+        <ConnectButton showBalance={false} />
       </motion.div>
 
       <motion.section
