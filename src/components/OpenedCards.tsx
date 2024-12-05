@@ -91,14 +91,8 @@ export const OpenedCards = () => {
       console.log(`Raw URI from contract for token ${tokenId}:`, uri);
 
       if (uri) {
-        const formattedUri = uri.toString().replace(
-          '{id}',
-          tokenId.toString(16).padStart(64, '0')
-        );
-        
-        console.log(`Formatted URI for token ${tokenId}:`, formattedUri);
-        
-        const response = await fetch(formattedUri);
+        // Use the URI directly from the contract without modification
+        const response = await fetch(uri.toString());
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
