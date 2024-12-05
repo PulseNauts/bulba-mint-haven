@@ -9,6 +9,7 @@ import { PageContainer } from "@/components/ui/PageContainer";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { useContractData } from "@/hooks/useContractData";
 import { CollectionStats } from "@/components/CollectionStats";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 const OpenPacks = () => {
   const { isConnected } = useAccount();
@@ -26,6 +27,16 @@ const OpenPacks = () => {
           >
             <h2 className="text-2xl font-bold mb-4 text-custom-light">Connect Wallet</h2>
             <p className="text-custom-light/80 mb-4">Please connect your wallet to view your profile</p>
+            <ConnectButton.Custom>
+              {({ openConnectModal }) => (
+                <Button 
+                  onClick={openConnectModal} 
+                  className="glass-effect bg-custom-primary/20 hover:bg-custom-primary/30 border-custom-primary/30 text-custom-light"
+                >
+                  Connect Wallet
+                </Button>
+              )}
+            </ConnectButton.Custom>
           </motion.div>
         </GlassCard>
       </PageContainer>
