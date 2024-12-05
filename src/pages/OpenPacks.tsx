@@ -20,7 +20,7 @@ const OpenPacks = () => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="space-y-4"
+            className="space-y-4 flex flex-col items-center"
           >
             <h2 className="text-2xl font-bold mb-4 text-custom-light">Connect Wallet</h2>
             <p className="text-custom-light/80 mb-4">Please connect your wallet to view your profile</p>
