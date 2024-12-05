@@ -128,62 +128,20 @@ export const MintControls = ({
 
   return (
     <div className="space-y-4">
-      <BenefitsDisplay 
-        tier={isWhale ? 'whale' : isHolder ? 'holder' : 'none'} 
-        freePacks={!hasClaimedFreePack && isWhale ? 1 : 0} 
-        discountedPacks={5 - Number(discountedPacksMinted || 0)} 
-      />
-
-      <MintAmountControls 
-        mintAmount={mintAmount}
-        setMintAmount={setMintAmount}
-        maxMintAmount={maxMintAmount}
-      />
-
-      {!isConnected && (
-        <>
-          <ConnectButton.Custom>
-            {({ openConnectModal }) => (
-              <Button onClick={openConnectModal} className="w-full">
-                Connect Wallet
-              </Button>
-            )}
-          </ConnectButton.Custom>
-
-          <Link to="/open-packs" className="block">
-            <Button className="w-full" variant="outline">
-              <Package className="mr-2 h-4 w-4" />
-              Go to My Profile
-            </Button>
-          </Link>
-        </>
-      )}
-
-      {isConnected && (
-        <>
-          <Button
-            onClick={handleMint}
-            disabled={isMinting || (!whaleCheckSuccess || !holderCheckSuccess)}
-            className="w-full"
-          >
-            {isMinting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Minting...
-              </>
-            ) : (
-              getMintButtonText()
-            )}
+      <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 text-center">
+        <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-200 mb-4">
+          Mint Complete
+        </h3>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">
+          Thank you for participating in our mint! You can now view your packs in your profile.
+        </p>
+        <Link to="/open-packs" className="block">
+          <Button className="w-full" variant="default">
+            <Package className="mr-2 h-4 w-4" />
+            Go to My Profile
           </Button>
-
-          <Link to="/open-packs" className="block">
-            <Button className="w-full" variant="outline">
-              <Package className="mr-2 h-4 w-4" />
-              Go to My Profile
-            </Button>
-          </Link>
-        </>
-      )}
+        </Link>
+      </div>
     </div>
   );
 };
