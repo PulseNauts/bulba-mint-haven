@@ -16,6 +16,23 @@ interface OpenedCard {
   name?: string;
 }
 
+// Helper function to format IPFS URLs
+const formatImageUrl = (imageUrl: string | undefined) => {
+  if (!imageUrl) return undefined;
+  
+  // If it's already an HTTP URL, return as is
+  if (imageUrl.startsWith('http')) {
+    return imageUrl;
+  }
+  
+  // Handle IPFS URLs
+  if (imageUrl.startsWith('ipfs://')) {
+    return imageUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
+  }
+  
+  return imageUrl;
+};
+
 export const OpenedCards = () => {
   const { address, isConnected } = useAccount();
   const [cards, setCards] = useState<OpenedCard[]>([]);
@@ -63,7 +80,6 @@ export const OpenedCards = () => {
       });
 
       if (uri) {
-        // Replace any {id} placeholder with the actual token ID in hexadecimal format
         const formattedUri = uri.toString().replace(
           '{id}',
           tokenId.toString(16).padStart(64, '0')
@@ -79,9 +95,10 @@ export const OpenedCards = () => {
         const metadata = await response.json();
         console.log(`Metadata for token ${tokenId}:`, metadata);
         
+        // Format the image URL before returning
         return {
           id: tokenId,
-          image: metadata.image,
+          image: formatImageUrl(metadata.image),
           name: metadata.name
         };
       }
