@@ -10,15 +10,17 @@ export const GlassCard = ({ className, children, ...props }: GlassCardProps) => 
   return (
     <Card
       className={cn(
-        "relative overflow-hidden backdrop-blur-sm border-opacity-20 shadow-xl",
-        "bg-black/10 dark:bg-white/10",
-        "before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite]",
-        "before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent",
+        "cyber-glass neon-glow hologram-effect",
+        "transition-all duration-300 hover:scale-[1.02]",
+        "before:absolute before:inset-0 before:-translate-x-full before:animate-[hologram-sweep_3s_ease-in-out_infinite]",
+        "before:bg-gradient-to-r before:from-transparent before:via-neon-cyan/20 before:to-transparent",
         className
       )}
       {...props}
     >
-      {children}
+      <div className="relative z-10">
+        {children}
+      </div>
     </Card>
   );
 };

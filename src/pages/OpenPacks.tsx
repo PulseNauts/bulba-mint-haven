@@ -22,8 +22,8 @@ const OpenPacks = () => {
             transition={{ duration: 0.3 }}
             className="space-y-4 flex flex-col items-center"
           >
-            <h2 className="text-2xl font-bold mb-4 text-custom-light">Connect Wallet</h2>
-            <p className="text-custom-light/80 mb-4">Please connect your wallet to view your profile</p>
+            <h2 className="text-2xl font-bold mb-4 text-foreground animate-cyber-glow">Initialize Neural Link</h2>
+            <p className="text-muted-foreground mb-4 font-mono">Connect your digital wallet to access the cyber vault</p>
             <ConnectButton />
           </motion.div>
         </GlassCard>
@@ -38,8 +38,8 @@ const OpenPacks = () => {
         animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between gap-4"
       >
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-[#9DE182] to-[#65B741] bg-clip-text text-transparent">
-          Bulbasaur Profile
+        <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-neon-pink via-neon-purple to-neon-cyan bg-clip-text text-transparent animate-neon-flicker">
+          CYBER VAULT
         </h1>
         <ConnectButton showBalance={false} />
       </motion.div>
@@ -50,11 +50,12 @@ const OpenPacks = () => {
         transition={{ delay: 0.2 }}
         className="space-y-4 mt-8"
       >
-        <div className="flex items-center gap-2">
-          <Package className="h-5 w-5 text-[#65B741]" />
-          <h2 className="text-2xl font-semibold text-custom-light">Your Unopened Packs</h2>
+        <div className="flex items-center gap-3">
+          <Package className="h-6 w-6 text-neon-cyan animate-neon-pulse" />
+          <h2 className="text-2xl font-semibold text-foreground font-mono tracking-wide">DATA CONTAINERS</h2>
+          <div className="flex-1 h-px bg-gradient-to-r from-neon-cyan via-transparent to-neon-pink"></div>
         </div>
-        <GlassCard className="p-6 border-[#9DE182]/20">
+        <GlassCard className="p-6 animate-cyber-float">
           <PackAmountTracker />
         </GlassCard>
       </motion.section>
